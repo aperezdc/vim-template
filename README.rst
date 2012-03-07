@@ -18,9 +18,9 @@ The easiest way to install the plugin is to install it as a bundle:
 
 2. ``cd ~/.vim/bundle``
 
-3. ``git clone git://github.com/aperezdc/vim-templates``
+3. ``git clone git://github.com/aperezdc/vim-templates.git``
 
-__ https://github.com/tpope/vim-pathogen>
+__ https://github.com/tpope/vim-pathogen
 
 
 Updating
