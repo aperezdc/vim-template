@@ -25,6 +25,8 @@ function <SID>DirName(path)
 	return substitute(a:path, "[^/][^/]*/*$", "", "")
 endfunction
 
+" Default templates directory
+let s:default_template_dir = <SID>DirName(<SID>DirName(expand("<sfile>"))) . "templates"
 
 " Searches for a [template] in a given [path].
 "
@@ -58,13 +60,13 @@ endfunction
 
 " Tries to find a template by its name, searching using:
 "   1. The [path] passed to the function, [upwards] times up.
-"   2. The ~/.vim/templates/ directory or g:template_dir if
-"      it exists.
+"   2. The g:template_dir directory, if it exists.
+"   3. Built-in templates from s:default_template_dir.
 " Returns an empty string if no template is found.
 "
 function <SID>TFind(path, name, up)
 	let l:tmpl = <SID>TSearch(a:path, "=" . a:name, a:up)
-	let l:path = exists("g:template_dir") ? g:template_dir : "~/.vim/templates"
+	let l:path = exists("g:template_dir") ? g:template_dir : s:default_template_dir
 	if l:tmpl != ""
 		return l:tmpl
 	else
