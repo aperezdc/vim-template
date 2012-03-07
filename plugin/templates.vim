@@ -6,6 +6,12 @@
 " Distributed under terms of the MIT license.
 "
 
+if exists("g:templates_plugin_loaded")
+	finish
+endif
+let g:templates_plugin_loaded = 1
+
+
 " Put template system autocommands in their own group. {{{1
 augroup Templating
 	autocmd!
