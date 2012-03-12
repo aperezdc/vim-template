@@ -33,3 +33,66 @@ Git to update it:
 
 2. ``git pull``
 
+
+Usage
+=====
+
+There are a number of options to use a template:
+
+
+* Create a new file giving it a name. The suffix will be used to determine
+  which template to use. E.g::
+
+    $ vim foo.c
+
+* In a buffer, use ``:Template foo`` to load the template that would be
+  loaded for file with suffix ``foo``. E.g. from within Vim::
+
+    :Template c
+
+Template search order
+---------------------
+
+The algorithm to search for templates works like this:
+
+1. A file named ``=template.<suffix>`` in the current directory. If not
+   found, goto *(2)*.
+
+2. Go up a directory and goto *(1)*, if not possible, goto *(3)*.
+
+3. Try to use the ``template.<suffix>`` file supplied with the plugin.
+
+
+Variables in templates
+----------------------
+
+The following variables will be expanded in templates:
+
+``%DAY%``, ``%YEAR%``, ``%MONTH%``
+    Numerical day of the month, year and month.
+``%DATE%``
+    Date in ``YYYY-mm-dd`` format
+``%TIME%``
+    Time in ``HH:MM`` format
+``%FDATE``
+    Full date (date + time), in ``YYYY-mm-dd HH:MM`` format.
+``%FILE%``
+    File name, without extension.
+``%FFILE%``
+    File name, with extension.
+``%EXT%``
+    File extension.
+``%MAIL%``
+    Current user's e-mail address. May be overriden by defining ``g:email``.
+``%USER%``
+    Current logged-in user name. May be overriden by defining ``g:username``.
+``%HOST%``
+    Host name.
+``%GUARD%``
+    A string with alphanumeric characters and underscores, suitable for use
+    in proprocessor guards for C/C++/Objective-C header files.
+``%HERE%``
+    Expands to nothing, but ensures that the cursor will be placed in its
+    position after expanding the template.
+
+
