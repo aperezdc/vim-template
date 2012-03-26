@@ -144,6 +144,10 @@ endfunction
 " cursor at %HERE%. Used to implement the BufNewFile autocommand.
 "
 function <SID>TLoad()
+	if len(getline(1, '$')) == 1 && empty(getline(1))
+		return
+	endif
+
 	let l:file_ext = expand("%:e")
 	if l:file_ext == ""
 		let l:file_ext = expand("%:t")
