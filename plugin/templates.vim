@@ -14,10 +14,16 @@ let g:templates_plugin_loaded = 1
 
 
 " Put template system autocommands in their own group. {{{1
-augroup Templating
-	autocmd!
-	autocmd BufNewFile * call <SID>TLoad()
-augroup END
+if !exists('g:templates_no_autocmd')
+	let g:templates_no_autocmd = 0
+endif
+
+if !g:templates_no_autocmd
+	augroup Templating
+		autocmd!
+		autocmd BufNewFile * call <SID>TLoad()
+	augroup END
+endif
 
 " Template searching. {{{1
 " Returns a string containing the path of the parent directory of the given

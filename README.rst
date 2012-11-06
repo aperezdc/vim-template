@@ -33,6 +33,15 @@ Git to update it:
 
 2. ``git pull``
 
+Configuration
+=============
+
+In your vimrc you can put:
+
+* ``let g:templates_plugin_loaded = 1`` to skip loading of this plugin.
+
+* ``let g:templates_no_autocmd = 1`` to disable automatic insertion of
+  template in new files.
 
 Usage
 =====
