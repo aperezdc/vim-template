@@ -29,7 +29,8 @@ endif
 " Returns a string containing the path of the parent directory of the given
 " path. Works like dirname(3). It also simplifies the given path.
 function <SID>DirName(path)
-	return substitute(a:path, "[^/][^/]*/*$", "", "")
+	let l:tmp = substitute(a:path, "\\", "/", "g")
+	return substitute(l:tmp, "[^/][^/]*/*$", "", "")
 endfunction
 
 " Default templates directory
