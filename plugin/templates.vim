@@ -25,15 +25,44 @@ if !g:templates_no_autocmd
 	augroup END
 endif
 
+" normalize the path
+" replace the windows path sep \ with /
+function <SID>NormalizePath(path)
+	return substitute(a:path, "\\", "/", "g")
+endfunction
+
 " Template searching. {{{1
 " Returns a string containing the path of the parent directory of the given
 " path. Works like dirname(3). It also simplifies the given path.
 function <SID>DirName(path)
-	return substitute(a:path, "[^/][^/]*/*$", "", "")
+	let l:tmp = <SID>NormalizePath(a:path)
+	return substitute(l:tmp, "[^/][^/]*/*$", "", "")
 endfunction
 
 " Default templates directory
 let s:default_template_dir = <SID>DirName(<SID>DirName(expand("<sfile>"))) . "templates"
+  
+" Find the target template in windows
+"
+" In windows while we clone the symbol link from github
+" it will turn to normal file, so we use this function
+" to figure out the destination file
+function <SID>TFindLink(path, template)
+	if !filereadable(a:path . a:template)
+		return a:template
+	endif
+
+	let l:content = readfile(a:path . a:template, "b")
+	if len(l:content) != 1
+		return a:template
+	endif
+
+	if filereadable(a:path . l:content[0])
+		return <SID>TFindLink(a:path, l:content[0])
+	else
+		return a:template
+	endif
+endfunction
 
 " Searches for a [template] in a given [path].
 "
@@ -48,7 +77,11 @@ let s:default_template_dir = <SID>DirName(<SID>DirName(expand("<sfile>"))) . "te
 function <SID>TSearch(path, template, upwards)
 	if filereadable(a:path . a:template)
 		" Suitable template found.
-		return a:path . a:template
+		if !has("win32")
+			return a:path . a:template
+		else
+			return a:path . <SID>TFindLink(a:path, a:template)
+		endif
 	else
 		" File not found/not readable.
 		if (a:upwards == 0) || (a:upwards > 1)
@@ -77,7 +110,7 @@ function <SID>TFind(path, name, up)
 	if l:tmpl != ""
 		return l:tmpl
 	else
-		return <SID>TSearch(expand(l:path . "/"), a:name, 1)
+		return <SID>TSearch(<SID>NormalizePath(expand(l:path . "/")), a:name, 1)
 	endif
 endfunction
 
@@ -109,7 +142,8 @@ function <SID>TExpandVars()
 	let l:user  = exists("g:username") ? g:username :
 				\ (exists("g:user") ? g:user : $USER)
 	let l:email = exists("g:email") ? g:email : (l:user . "@" . l:hostn)
-	let l:guard = substitute(l:filec, "[^a-zA-Z0-9]", "_", "g")
+	let l:guard = toupper(substitute(l:filec, "[^a-zA-Z0-9]", "_", "g"))
+	let l:class = substitute(l:filen, "\\([a-zA-Z]\\+\\)", "\\u\\1\\e", "g")
 
 	" Finally, perform expansions
 	call <SID>TExpand("DAY",   l:day)
@@ -125,6 +159,7 @@ function <SID>TExpandVars()
 	call <SID>TExpand("MAIL",  l:email)
 	call <SID>TExpand("HOST",  l:hostn)
 	call <SID>TExpand("GUARD", l:guard)
+	call <SID>TExpand("CLASS", l:class)
 endfunction
 
 " }}}2
