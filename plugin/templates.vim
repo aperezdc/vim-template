@@ -160,6 +160,7 @@ function <SID>TExpandVars()
 	call <SID>TExpand("HOST",  l:hostn)
 	call <SID>TExpand("GUARD", l:guard)
 	call <SID>TExpand("CLASS", l:class)
+	call <SID>TExpand("LICENSE", exists("g:license") ? g:license : "MIT")
 endfunction
 
 " }}}2
