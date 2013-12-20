@@ -204,6 +204,8 @@ function <SID>TLoad()
 		" Read template file and expand variables in it.
 		execute "0r " . l:tFile
 		call <SID>TExpandVars()
+		" This leaves an extra blank line at the bottom, delete it
+		execute line('$') . "d"
 		call <SID>TPutCursor()
 		setlocal nomodified
 	endif
@@ -227,6 +229,7 @@ function <SID>TLoadCmd(template)
 	if l:tFile != ""
 		execute "0r " . l:tFile
 		call <SID>TExpandVars()
+		execute line('$') . "d"
 		call <SID>TPutCursor()
 	endif
 endfunction
