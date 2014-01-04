@@ -204,6 +204,7 @@ function <SID>TLoad()
 		" Read template file and expand variables in it.
 		execute "0r " . l:tFile
 		call <SID>TExpandVars()
+		execute "normal Gdd"
 		call <SID>TPutCursor()
 		setlocal nomodified
 	endif
