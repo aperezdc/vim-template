@@ -228,6 +228,7 @@ function <SID>TLoadCmd(template)
 	if l:tFile != ""
 		execute "0r " . l:tFile
 		call <SID>TExpandVars()
+		execute "normal Gdd"
 		call <SID>TPutCursor()
 	endif
 endfunction
