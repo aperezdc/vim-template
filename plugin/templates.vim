@@ -12,7 +12,9 @@ if exists("g:templates_plugin_loaded")
 endif
 let g:templates_plugin_loaded = 1
 
-let g:template_name_prefix = "template."
+if !exists('g:templates_name_prefix')
+	let g:templates_name_prefix = "template."
+endif
 
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
@@ -69,21 +71,36 @@ endfunction
 " against a given filename
 function <SID>TemplateToRegex(template)
 	let l:template_base_name = fnamemodify(a:template,":t")
-	return '.*' . strpart(l:template_base_name, len(g:template_name_prefix))
+	return '.*' . strpart(l:template_base_name, len(g:templates_name_prefix))
 endfunction
 
 " Returns the value with the largest weighting
 function <SID>Heaviest(val1, weight1, val2, weight2)
 endfunction
 
-" Returns the most specific template file found in the given path using the
-" g:template_name_prefix  wildcard string that matches a given file_name
+" Returns the most specific template file found in the given path.  Template
+" files are found by using a glob operation on the current path and the setting
+" of g:templates_name_prefix. For each possible template file found this way,
+" convert it into a regex expression.  As of writing this behavior is something
+" like this:
+"
+"  (with a g:templates_name_prefix set as 'template.'
+"
+" template.py -> *py
+"
+" template.test.py -> *test.py
+"
+" If there are multiple matches, return the template file name with the longest
+" regex generated.  I.e. ext 'test.py' would take precedence over 'py'
+"
+" If no template is found in the given directory, return an empty string
+"
 function <SID>TDirectorySearch(path, file_name)
 	let l:picked_template = ""
 	let l:picked_template_regex_length = 0
 
 	" All template files matching
-	let l:templates = glob(a:path . g:template_name_prefix . "*", 0, 1)
+	let l:templates = glob(a:path . g:templates_name_prefix . "*", 0, 1)
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
@@ -146,9 +163,11 @@ function <SID>TSearch(path, file_name, upwards)
 endfunction
 
 
-" Tries to find valid templates using the global g:template_name_prefix as a glob
+" Tries to find valid templates using the global g:templates_name_prefix as a glob
 " matcher for template files. The search is done as follows:
-"   // TODO document
+"   1. The [path] passed to the function, [upwards] times up.
+"   2. The g:template_dir directory, if it exists.
+"   3. Built-in templates from s:default_template_dir.
 " Returns an empty string if no template is found.
 "
 function <SID>TFind(path, name, up)
@@ -265,7 +284,10 @@ function <SID>TLoadCmd(template)
 	else
 		let l:depth = exists("g:template_max_depth") ? g:template_max_depth : 0
 		let l:tName = "template." . a:template
-		let l:tFile = <SID>TFind(<SID>DirName(expand("%:p")), l:tName, l:depth)
+		let l:file_name = expand("%:p")
+		let l:file_dir = <SID>DirName(l:file_name)
+
+		let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
 	endif
 
 	if l:tFile != ""
