@@ -68,30 +68,29 @@ endfunction
 " Translate a template file name into a regular expression to test for matching
 " against a given filename
 function <SID>TemplateToRegex(template)
-	return '.*' . strpart(template, len(g:template_name_prefix))
+	let l:template_base_name = fnamemodify(a:template,":t")
+	return '.*' . strpart(l:template_base_name, len(g:template_name_prefix))
 endfunction
 
-" Returns the longest string of the two given strings
-function <SID>Longest(str1,str2)
-	if len(a:str2) > len(a:str1)
-		return a:str2
-	else
-		return a:str1
-	endif
+" Returns the value with the largest weighting
+function <SID>Heaviest(val1, weight1, val2, weight2)
 endfunction
 
 " Returns the most specific template file found in the given path using the
 " g:template_name_prefix  wildcard string that matches a given file_name
 function <SID>TDirectorySearch(path, file_name)
 	let l:picked_template = ""
+	let l:picked_template_regex_length = 0
 
 	" All template files matching
-	let l:templates = globpath(a:path, g:template_name_prefix . "*" ,0,1)
-	for l:template in l:templates
+	let l:templates = glob(a:path . g:template_name_prefix . "*", 0, 1)
+	for template in l:templates
 		" Make sure the template is readable
-		if filereadable(l:template)
+		if filereadable(template)
 			" Convert the template file name to a regular expression
-			let l:regex = <SID>TemplateToRegex(l:template)
+			let l:regex = <SID>TemplateToRegex(template)
+			" DEBUG
+			echoerr l:regex
 			if l:regex != ""
 				" See if the template matches the file name
 				let l:regex_result = match(a:file_name,l:regex)
@@ -99,7 +98,10 @@ function <SID>TDirectorySearch(path, file_name)
 					" Pick that template only if it beats the currently picked template
 					" (here we make the assumption that template name length ~= template
 					" specifity)
-					let l:picked_template = <SID>Longest(l:picked_template,l:template)
+					if len(l:regex) > l:picked_template_regex_length 
+						let l:picked_template = template
+						let l:picked_template_regex_length = len(l:regex)
+					endif
 				endif
 			endif
 		endif
@@ -120,12 +122,13 @@ endfunction
 function <SID>TSearch(path, file_name, upwards)
 
 	" pick a template from the current path
-	let l:picked_template = <SID>TDirectorySearch(path, file_name)
+	let l:picked_template = <SID>TDirectorySearch(a:path, a:file_name)
 
 	if l:picked_template != ""
 		if !has("win32")
 			return l:picked_template
 		else
+			echoerr( "Not yet implemented" )
 			" TODO
 			" return a:path . <SID>TFindLink(a:path, a:template)
 		endif
@@ -147,7 +150,7 @@ endfunction
 
 " Tries to find valid templates using the global g:template_name_prefix as a glob
 " matcher for template files. The search is done as follows:
-"   // TODO
+"   // TODO document
 " Returns an empty string if no template is found.
 "
 function <SID>TFind(path, name, up)
