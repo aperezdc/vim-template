@@ -12,7 +12,7 @@ if exists("g:templates_plugin_loaded")
 endif
 let g:templates_plugin_loaded = 1
 
-let g:template_name = "template.*"
+let g:template_name_prefix = "template."
 
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
@@ -68,7 +68,7 @@ endfunction
 " Translate a template file name into a regular expression to test for matching
 " against a given filename
 function <SID>TemplateToRegex(template)
-	" TODO
+	return '.*' . strpart(template, len(g:template_name_prefix))
 endfunction
 
 " Returns the longest string of the two given strings
@@ -81,12 +81,12 @@ function <SID>Longest(str1,str2)
 endfunction
 
 " Returns the most specific template file found in the given path using the
-" g:template_name wildcard string that matches a given file_name
+" g:template_name_prefix  wildcard string that matches a given file_name
 function <SID>TDirectorySearch(path, file_name)
 	let l:picked_template = ""
 
 	" All template files matching
-	let l:templates = globpath(a:path, g:template_name,0,1)
+	let l:templates = globpath(a:path, g:template_name_prefix . "*" ,0,1)
 	for l:template in l:templates
 		" Make sure the template is readable
 		if filereadable(l:template)
@@ -145,7 +145,7 @@ function <SID>TSearch(path, file_name, upwards)
 endfunction
 
 
-" Tries to find valid templates using the global g:template_name as a glob
+" Tries to find valid templates using the global g:template_name_prefix as a glob
 " matcher for template files. The search is done as follows:
 "   // TODO
 " Returns an empty string if no template is found.
