@@ -71,7 +71,7 @@ endfunction
 " against a given filename
 function <SID>TemplateToRegex(template)
 	let l:template_base_name = fnamemodify(a:template,":t")
-	return '.*' . strpart(l:template_base_name, len(g:templates_name_prefix))
+	return '^.*' . strpart(l:template_base_name, len(g:templates_name_prefix)) . '$'
 endfunction
 
 " Given a template and filename, return a score on how well the template matches
