@@ -74,8 +74,30 @@ function <SID>TemplateToRegex(template)
 	return '.*' . strpart(l:template_base_name, len(g:templates_name_prefix))
 endfunction
 
-" Returns the value with the largest weighting
-function <SID>Heaviest(val1, weight1, val2, weight2)
+" Given a template and filename, return a score on how well the template matches
+" the given filename.  If the template does not match the file name at all,
+" return 0
+function <SID>TemplateBaseNameTest(template,filename)
+	let l:tregex = <SID>TemplateToRegex(a:template)
+
+	" Ensure that we got a valid regex
+	if l:tregex == ""
+		return 0
+	endif
+
+	" For now only use the base of the filename.. this may change later
+	let l:filename_chopped = fnamemodify(a:filename,":t")
+
+	" Check for a match
+	let l:regex_result = match(l:filename_chopped,l:tregex)
+	if l:regex_result != -1
+		" For a match return a score based on the regex length
+		return len(l:tregex)
+	else
+		" No match
+		return 0
+	endif
+
 endfunction
 
 " Returns the most specific template file found in the given path.  Template
@@ -97,31 +119,25 @@ endfunction
 "
 function <SID>TDirectorySearch(path, file_name)
 	let l:picked_template = ""
-	let l:picked_template_regex_length = 0
+	let l:picked_template_score = 0
 
 	" All template files matching
 	let l:templates = glob(a:path . g:templates_name_prefix . "*", 0, 1)
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
-			" Convert the template file name to a regular expression
-			let l:regex = <SID>TemplateToRegex(template)
-			" DEBUG
-			if l:regex != ""
-				" See if the template matches the file name
-				let l:regex_result = match(a:file_name,l:regex)
-				if l:regex_result != -1
-					" Pick that template only if it beats the currently picked template
-					" (here we make the assumption that template name length ~= template
-					" specifity)
-					if len(l:regex) > l:picked_template_regex_length 
-						let l:picked_template = template
-						let l:picked_template_regex_length = len(l:regex)
-					endif
-				endif
+			let l:current_score = <SID>TemplateBaseNameTest(template,a:file_name)
+			echom "template: " . template " got scored: " . l:current_score
+			" Pick that template only if it beats the currently picked template
+			" (here we make the assumption that template name length ~= template
+			" specifity / score)
+			if l:current_score > l:picked_template_score
+				let l:picked_template = template
+				let l:picked_template_score = l:current_score
 			endif
 		endif
 	endfor
+	echom "Picked template: " . l:picked_template
 	return l:picked_template
 endfunction
 
