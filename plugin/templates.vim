@@ -90,7 +90,6 @@ function <SID>TDirectorySearch(path, file_name)
 			" Convert the template file name to a regular expression
 			let l:regex = <SID>TemplateToRegex(template)
 			" DEBUG
-			echoerr l:regex
 			if l:regex != ""
 				" See if the template matches the file name
 				let l:regex_result = match(a:file_name,l:regex)
@@ -120,7 +119,6 @@ endfunction
 " If no template is found an empty string is returned.
 "
 function <SID>TSearch(path, file_name, upwards)
-
 	" pick a template from the current path
 	let l:picked_template = <SID>TDirectorySearch(a:path, a:file_name)
 
