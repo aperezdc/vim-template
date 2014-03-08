@@ -16,6 +16,10 @@ if !exists('g:templates_name_prefix')
 	let g:templates_name_prefix = "template."
 endif
 
+if !exists('g:templates_debug')
+	let g:templates_debug = 0
+endif
+
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
 	let g:templates_no_autocmd = 0
@@ -27,6 +31,12 @@ if !g:templates_no_autocmd
 		autocmd BufNewFile * call <SID>TLoad()
 	augroup END
 endif
+
+function <SID>Debug(mesg)
+	if g:templates_debug
+		echom(a:mesg)
+	endif
+endfunction
 
 " normalize the path
 " replace the windows path sep \ with /
@@ -129,7 +139,8 @@ function <SID>TDirectorySearch(path, file_name)
 		" Make sure the template is readable
 		if filereadable(template)
 			let l:current_score = <SID>TemplateBaseNameTest(template,a:file_name)
-			echom "template: " . template " got scored: " . l:current_score
+			call <SID>Debug("template: " . template . " got scored: " . l:current_score)
+
 			" Pick that template only if it beats the currently picked template
 			" (here we make the assumption that template name length ~= template
 			" specifity / score)
@@ -139,7 +150,13 @@ function <SID>TDirectorySearch(path, file_name)
 			endif
 		endif
 	endfor
-	echom "Picked template: " . l:picked_template
+
+	if l:picked_template != ""
+		call <SID>Debug("Picked template: " . l:picked_template)
+	else
+		call <SID>Debug("No template found")
+	endif
+
 	return l:picked_template
 endfunction
 
