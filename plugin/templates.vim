@@ -86,6 +86,8 @@ function <SID>TemplateBaseNameTest(template,filename)
 	endif
 
 	" For now only use the base of the filename.. this may change later
+	" *Note* we also have to be carefule because a:filename may also be the passed
+	" in text from TLoadCmd...
 	let l:filename_chopped = fnamemodify(a:filename,":t")
 
 	" Check for a match
@@ -303,7 +305,7 @@ function <SID>TLoadCmd(template)
 		let l:file_name = expand("%:p")
 		let l:file_dir = <SID>DirName(l:file_name)
 
-		let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
+		let l:tFile = <SID>TFind(l:file_dir, a:template, l:depth)
 	endif
 
 	if l:tFile != ""
