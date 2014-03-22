@@ -78,7 +78,13 @@ function <SID>TFindLink(path, template)
 endfunction
 
 " Translate a template file name into a regular expression to test for matching
-" against a given filename
+" against a given filename. As of writing this behavior is something like this:
+" (with a g:templates_name_prefix set as 'template.')
+"
+" template.py -> ^.*py$
+"
+" template.test.py -> ^.*test.py$
+"
 function <SID>TemplateToRegex(template)
 	let l:template_base_name = fnamemodify(a:template,":t")
 	return '^.*' . strpart(l:template_base_name, len(g:templates_name_prefix)) . '$'
@@ -112,23 +118,10 @@ function <SID>TemplateBaseNameTest(template,filename)
 
 endfunction
 
-" Returns the most specific template file found in the given path.  Template
-" files are found by using a glob operation on the current path and the setting
-" of g:templates_name_prefix. For each possible template file found this way,
-" convert it into a regex expression.  As of writing this behavior is something
-" like this:
-"
-"  (with a g:templates_name_prefix set as 'template.'
-"
-" template.py -> *py
-"
-" template.test.py -> *test.py
-"
-" If there are multiple matches, return the template file name with the longest
-" regex generated.  I.e. ext 'test.py' would take precedence over 'py'
-"
-" If no template is found in the given directory, return an empty string
-"
+" Returns the most specific / highest scored template file found in the given
+" path.  Template files are found by using a glob operation on the current path
+" and the setting of g:templates_name_prefix. If no template is found in the
+" given directory, return an empty string
 function <SID>TDirectorySearch(path, file_name)
 	let l:picked_template = ""
 	let l:picked_template_score = 0
