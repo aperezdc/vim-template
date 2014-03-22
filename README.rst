@@ -47,6 +47,8 @@ In your vimrc you can put:
   template files that are searched.  *Note* This setting will also affect
   templates in your global templates directory.  TODO: change this behavior?
 
+* ``let g:templates_debug = 1`` to have vim-template output debug information
+
 Usage
 =====
 
