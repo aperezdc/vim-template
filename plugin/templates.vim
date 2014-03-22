@@ -96,7 +96,7 @@ function <SID>TemplateBaseNameTest(template,filename)
 	endif
 
 	" For now only use the base of the filename.. this may change later
-	" *Note* we also have to be carefule because a:filename may also be the passed
+	" *Note* we also have to be careful because a:filename may also be the passed
 	" in text from TLoadCmd...
 	let l:filename_chopped = fnamemodify(a:filename,":t")
 
