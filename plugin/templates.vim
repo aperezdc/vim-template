@@ -12,6 +12,13 @@ if exists("g:templates_plugin_loaded")
 endif
 let g:templates_plugin_loaded = 1
 
+if !exists('g:templates_name_prefix')
+	let g:templates_name_prefix = "template."
+endif
+
+if !exists('g:templates_debug')
+	let g:templates_debug = 0
+endif
 
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
@@ -24,6 +31,12 @@ if !g:templates_no_autocmd
 		autocmd BufNewFile * call <SID>TLoad()
 	augroup END
 endif
+
+function <SID>Debug(mesg)
+	if g:templates_debug
+		echom(a:mesg)
+	endif
+endfunction
 
 " normalize the path
 " replace the windows path sep \ with /
@@ -64,6 +77,82 @@ function <SID>TFindLink(path, template)
 	endif
 endfunction
 
+" Translate a template file name into a regular expression to test for matching
+" against a given filename. As of writing this behavior is something like this:
+" (with a g:templates_name_prefix set as 'template.')
+"
+" template.py -> ^.*py$
+"
+" template.test.py -> ^.*test.py$
+"
+function <SID>TemplateToRegex(template)
+	let l:template_base_name = fnamemodify(a:template,":t")
+	return '^.*' . strpart(l:template_base_name, len(g:templates_name_prefix)) . '$'
+endfunction
+
+" Given a template and filename, return a score on how well the template matches
+" the given filename.  If the template does not match the file name at all,
+" return 0
+function <SID>TemplateBaseNameTest(template,filename)
+	let l:tregex = <SID>TemplateToRegex(a:template)
+
+	" Ensure that we got a valid regex
+	if l:tregex == ""
+		return 0
+	endif
+
+	" For now only use the base of the filename.. this may change later
+	" *Note* we also have to be careful because a:filename may also be the passed
+	" in text from TLoadCmd...
+	let l:filename_chopped = fnamemodify(a:filename,":t")
+
+	" Check for a match
+	let l:regex_result = match(l:filename_chopped,l:tregex)
+	if l:regex_result != -1
+		" For a match return a score based on the regex length
+		return len(l:tregex)
+	else
+		" No match
+		return 0
+	endif
+
+endfunction
+
+" Returns the most specific / highest scored template file found in the given
+" path.  Template files are found by using a glob operation on the current path
+" and the setting of g:templates_name_prefix. If no template is found in the
+" given directory, return an empty string
+function <SID>TDirectorySearch(path, file_name)
+	let l:picked_template = ""
+	let l:picked_template_score = 0
+
+	" All template files matching
+	let l:templates = glob(a:path . g:templates_name_prefix . "*", 0, 1)
+	for template in l:templates
+		" Make sure the template is readable
+		if filereadable(template)
+			let l:current_score = <SID>TemplateBaseNameTest(template,a:file_name)
+			call <SID>Debug("template: " . template . " got scored: " . l:current_score)
+
+			" Pick that template only if it beats the currently picked template
+			" (here we make the assumption that template name length ~= template
+			" specifity / score)
+			if l:current_score > l:picked_template_score
+				let l:picked_template = template
+				let l:picked_template_score = l:current_score
+			endif
+		endif
+	endfor
+
+	if l:picked_template != ""
+		call <SID>Debug("Picked template: " . l:picked_template)
+	else
+		call <SID>Debug("No template found")
+	endif
+
+	return l:picked_template
+endfunction
+
 " Searches for a [template] in a given [path].
 "
 " If [upwards] is [1] the template is searched only in the given directory;
@@ -74,13 +163,17 @@ endfunction
 "
 " If no template is found an empty string is returned.
 "
-function <SID>TSearch(path, template, upwards)
-	if filereadable(a:path . a:template)
-		" Suitable template found.
+function <SID>TSearch(path, file_name, upwards)
+	" pick a template from the current path
+	let l:picked_template = <SID>TDirectorySearch(a:path, a:file_name)
+
+	if l:picked_template != ""
 		if !has("win32")
-			return a:path . a:template
+			return l:picked_template
 		else
-			return a:path . <SID>TFindLink(a:path, a:template)
+			echoerr( "Not yet implemented" )
+			" TODO
+			" return a:path . <SID>TFindLink(a:path, a:template)
 		endif
 	else
 		" File not found/not readable.
@@ -89,7 +182,7 @@ function <SID>TSearch(path, template, upwards)
 			let l:pathUp = <SID>DirName(a:path)
 			if l:pathUp != a:path
 				" ...and traverse it.
-				return <SID>TSearch(l:pathUp, a:template, a:upwards ? a:upwards-1 : 0)
+				return <SID>TSearch(l:pathUp, a:file_name, a:upwards ? a:upwards-1 : 0)
 			endif
 		endif
 	endif
@@ -98,18 +191,19 @@ function <SID>TSearch(path, template, upwards)
 endfunction
 
 
-" Tries to find a template by its name, searching using:
+" Tries to find valid templates using the global g:templates_name_prefix as a glob
+" matcher for template files. The search is done as follows:
 "   1. The [path] passed to the function, [upwards] times up.
 "   2. The g:template_dir directory, if it exists.
 "   3. Built-in templates from s:default_template_dir.
 " Returns an empty string if no template is found.
 "
 function <SID>TFind(path, name, up)
-	let l:tmpl = <SID>TSearch(a:path, "=" . a:name, a:up)
-	let l:path = exists("g:template_dir") ? g:template_dir : s:default_template_dir
+	let l:tmpl = <SID>TSearch(a:path, a:name, a:up)
 	if l:tmpl != ""
 		return l:tmpl
 	else
+		let l:path = exists("g:template_dir") ? g:template_dir : s:default_template_dir
 		return <SID>TSearch(<SID>NormalizePath(expand(l:path . "/")), a:name, 1)
 	endif
 endfunction
@@ -190,16 +284,11 @@ function <SID>TLoad()
 		return
 	endif
 
-	let l:file_ext = expand("%:e")
-	if l:file_ext == ""
-		let l:file_ext = expand("%:t")
-	endif
-
-	let l:file_dir = <SID>DirName(expand("%:p"))
-
+	let l:file_name = expand("%:p")
+	let l:file_dir = <SID>DirName(l:file_name)
 	let l:depth = exists("g:template_max_depth") ? g:template_max_depth : 0
-	let l:tName = "template." . l:file_ext
-	let l:tFile = <SID>TFind(l:file_dir, l:tName, l:depth)
+
+	let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
 	if l:tFile != ""
 		" Read template file and expand variables in it.
 		execute "0r " . l:tFile
@@ -223,7 +312,10 @@ function <SID>TLoadCmd(template)
 	else
 		let l:depth = exists("g:template_max_depth") ? g:template_max_depth : 0
 		let l:tName = "template." . a:template
-		let l:tFile = <SID>TFind(<SID>DirName(expand("%:p")), l:tName, l:depth)
+		let l:file_name = expand("%:p")
+		let l:file_dir = <SID>DirName(l:file_name)
+
+		let l:tFile = <SID>TFind(l:file_dir, a:template, l:depth)
 	endif
 
 	if l:tFile != ""

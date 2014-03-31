@@ -43,6 +43,12 @@ In your vimrc you can put:
 * ``let g:templates_no_autocmd = 1`` to disable automatic insertion of
   template in new files.
 
+* ``let g:templates_name_prefix = .vimtemplate.`` to change the name of the
+  template files that are searched.  *Note* This setting will also affect
+  templates in your global templates directory.  TODO: change this behavior?
+
+* ``let g:templates_debug = 1`` to have vim-template output debug information
+
 Usage
 =====
 
@@ -64,8 +70,9 @@ Template search order
 
 The algorithm to search for templates works like this:
 
-1. A file named ``=template.<suffix>`` in the current directory. If not
-   found, goto *(2)*.
+1. A file named ``template.<suffix>`` in the current directory. If not
+   found, goto *(2)*. If there are multiple template files that match a given
+   suffix in the *same* directory, the one that is most specific is used.
 
 2. Go up a directory and goto *(1)*, if not possible, goto *(3)*.
 
