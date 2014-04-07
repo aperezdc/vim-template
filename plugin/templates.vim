@@ -168,7 +168,7 @@ function <SID>TSearch(path, file_name, upwards)
 	let l:picked_template = <SID>TDirectorySearch(a:path, a:file_name)
 
 	if l:picked_template != ""
-		if !has("win32")
+		if !has("win32") || !has("win64")
 			return l:picked_template
 		else
 			echoerr( "Not yet implemented" )
