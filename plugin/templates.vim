@@ -333,7 +333,18 @@ endfunction
 " Just calls the above function, pass either a filename or a template
 " suffix, as explained before =)
 "
-command -nargs=1 -complete=file Template call <SID>TLoadCmd("<args>")
+fun ListTemplateSuffixes(A,P,L)
+  let l:templates = split(globpath(s:default_template_dir, "template." . a:A . "*"), "\n")
+  let l:res = []
+  for t in templates
+    let l:suffix = substitute(t, ".*\\.", "", "")
+    call add(l:res, l:suffix)
+  endfor
+
+  return l:res
+endfun
+command -nargs=1 -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>")
+
 
 
 " vim: fdm=marker
