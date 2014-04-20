@@ -217,28 +217,28 @@ function <SID>TExpand(variable, value)
 	silent! execute "%s/%" . a:variable . "%/" .  a:value . "/g"
 endfunction
 
-
 " Performs variable expansion in a template once it was loaded {{{2
 "
 function <SID>TExpandVars()
 	" Date/time values
-	let l:day   = strftime("%d")
-	let l:year  = strftime("%Y")
-	let l:month = strftime("%m")
-	let l:time  = strftime("%H:%M")
-	let l:date  = exists("g:dateformat") ? strftime(g:dateformat) :
-				\ (l:year . "-" . l:month . "-" . l:day)
-	let l:fdate = l:date . " " . l:time
-	let l:filen = expand("%:t:r")
-	let l:filex = expand("%:e")
-	let l:filec = expand("%:t")
-	let l:fdir  = expand("%:p:h:t")
-	let l:hostn = hostname()
-	let l:user  = exists("g:username") ? g:username :
-				\ (exists("g:user") ? g:user : $USER)
-	let l:email = exists("g:email") ? g:email : (l:user . "@" . l:hostn)
-	let l:guard = toupper(substitute(l:filec, "[^a-zA-Z0-9]", "_", "g"))
-	let l:class = substitute(l:filen, "\\([a-zA-Z]\\+\\)", "\\u\\1\\e", "g")
+	let l:day        = strftime("%d")
+	let l:year       = strftime("%Y")
+	let l:month      = strftime("%m")
+	let l:time       = strftime("%H:%M")
+	let l:date       = exists("g:dateformat") ? strftime(g:dateformat) :
+				     \ (l:year . "-" . l:month . "-" . l:day)
+	let l:fdate      = l:date . " " . l:time
+	let l:filen      = expand("%:t:r")
+	let l:filex      = expand("%:e")
+	let l:filec      = expand("%:t")
+	let l:fdir       = expand("%:p:h:t")
+	let l:hostn      = hostname()
+	let l:user       = exists("g:username") ? g:username :
+				     \ (exists("g:user") ? g:user : $USER)
+	let l:email      = exists("g:email") ? g:email : (l:user . "@" . l:hostn)
+	let l:guard      = toupper(substitute(l:filec, "[^a-zA-Z0-9]", "_", "g"))
+	let l:class      = substitute(l:filen, "\\([a-zA-Z]\\+\\)", "\\u\\1\\e", "g")
+	let l:macroclass = toupper(l:class)
 
 	" Finally, perform expansions
 	call <SID>TExpand("DAY",   l:day)
@@ -256,6 +256,7 @@ function <SID>TExpandVars()
 	call <SID>TExpand("HOST",  l:hostn)
 	call <SID>TExpand("GUARD", l:guard)
 	call <SID>TExpand("CLASS", l:class)
+	call <SID>TExpand("MACROCLASS", l:macroclass)
 	call <SID>TExpand("LICENSE", exists("g:license") ? g:license : "MIT")
 endfunction
 
