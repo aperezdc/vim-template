@@ -112,6 +112,9 @@ The following variables will be expanded in templates:
     capital
 ``%MACROCLASS%``
     File name, without extension, and all characters are capitals.
+``%CAMELCLASS%``
+    File name, without extension, the first character of every word is capital,
+    and all underscores are removed.
 ``%HERE%``
     Expands to nothing, but ensures that the cursor will be placed in its
     position after expanding the template.
