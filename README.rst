@@ -108,7 +108,7 @@ The following variables will be expanded in templates:
     A string with alphanumeric characters and underscores, suitable for use
     in proprocessor guards for C/C++/Objective-C header files.
 ``%CLASS%``
-    File name, without extension,and the first character of every word is
+    File name, without extension, and the first character of every word is
     capital
 ``%MACROCLASS%``
     File name, without extension, and all characters are capitals.
