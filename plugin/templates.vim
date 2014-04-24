@@ -138,12 +138,12 @@ endfunction
 " path.  Template files are found by using a glob operation on the current path
 " and the setting of g:templates_name_prefix. If no template is found in the
 " given directory, return an empty string
-function <SID>TDirectorySearch(path, file_name)
+function <SID>TDirectorySearch(path, template_prefix, file_name)
 	let l:picked_template = ""
 	let l:picked_template_score = 0
 
 	" All template files matching
-	let l:templates = glob(a:path . g:templates_name_prefix . "*", 0, 1)
+	let l:templates = glob(a:path . a:template_prefix . "*", 0, 1)
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
@@ -179,9 +179,9 @@ endfunction
 "
 " If no template is found an empty string is returned.
 "
-function <SID>TSearch(path, file_name, upwards)
+function <SID>TSearch(path, template_prefix, file_name, upwards)
 	" pick a template from the current path
-	let l:picked_template = <SID>TDirectorySearch(a:path, a:file_name)
+	let l:picked_template = <SID>TDirectorySearch(a:path, a:template_prefix, a:file_name)
 
 	if l:picked_template != ""
 		if !has("win32") || !has("win64")
@@ -198,7 +198,7 @@ function <SID>TSearch(path, file_name, upwards)
 			let l:pathUp = <SID>DirName(a:path)
 			if l:pathUp != a:path
 				" ...and traverse it.
-				return <SID>TSearch(l:pathUp, a:file_name, a:upwards ? a:upwards-1 : 0)
+				return <SID>TSearch(l:pathUp, a:template_prefix, a:file_name, a:upwards ? a:upwards-1 : 0)
 			endif
 		endif
 	endif
@@ -215,11 +215,11 @@ endfunction
 " Returns an empty string if no template is found.
 "
 function <SID>TFind(path, name, up)
-	let l:tmpl = <SID>TSearch(a:path, a:name, a:up)
+	let l:tmpl = <SID>TSearch(a:path, g:templates_name_prefix, a:name, a:up)
 	if l:tmpl != ""
 		return l:tmpl
 	else
-		return <SID>TSearch(<SID>NormalizePath(expand(<SID>GetGlobalTemplateDir() . "/")), a:name, 1)
+		return <SID>TSearch(<SID>NormalizePath(expand(<SID>GetGlobalTemplateDir() . "/")), "template.", a:name, 1)
 	endif
 endfunction
 
