@@ -20,14 +20,6 @@ if !exists('g:templates_debug')
 	let g:templates_debug = 0
 endif
 
-" Enable the vim-template syntax for template files
-" Usually we'd put this in the ftdetect folder, but because
-" g:templates_name_prefix doesn't get defined early enough we have to add the
-" template detection from the plugin itself
-execute "au BufNewFile,BufRead " . g:templates_name_prefix . "* "
-			\. "let b:vim_template_subtype = &filetype | "
-			\. "set ft=vim-template"
-
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
 	let g:templates_no_autocmd = 0
@@ -363,6 +355,15 @@ fun ListTemplateSuffixes(A,P,L)
 endfun
 command -nargs=1 -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>")
 
+" Syntax autocommands {{{1
+"
+" Enable the vim-template syntax for template files
+" Usually we'd put this in the ftdetect folder, but because
+" g:templates_name_prefix doesn't get defined early enough we have to add the
+" template detection from the plugin itself
+execute "au BufNewFile,BufRead " . g:templates_name_prefix . "* "
+			\. "let b:vim_template_subtype = &filetype | "
+			\. "set ft=vim-template"
 
 
 " vim: fdm=marker
