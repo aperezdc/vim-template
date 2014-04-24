@@ -365,6 +365,9 @@ execute "au BufNewFile,BufRead " . g:templates_name_prefix . "* "
 			\. "let b:vim_template_subtype = &filetype | "
 			\. "set ft=vim-template"
 
+execute "au BufNewFile,BufRead " . <SID>GetGlobalTemplateDir() . "/template.*"
+			\. "let b:vim_template_subtype = &filetype | "
+			\. "set ft=vim-template"
 
 " vim: fdm=marker
 
