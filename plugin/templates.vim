@@ -13,7 +13,7 @@ endif
 let g:templates_plugin_loaded = 1
 
 if !exists('g:templates_name_prefix')
-	let g:templates_name_prefix = "template."
+	let g:templates_name_prefix = ".vim-template:"
 endif
 
 if !exists('g:templates_debug')
