@@ -63,6 +63,14 @@ endfunction
 " Default templates directory
 let s:default_template_dir = <SID>DirName(<SID>DirName(expand("<sfile>"))) . "templates"
   
+" Returns the global template directory
+"
+" Returns the user's global template directory if it exists, otherwise returns
+" the default template directory
+function <SID>GetGlobalTemplateDir()
+	return exists("g:template_dir") ? g:template_dir : s:default_template_dir
+endfunction
+
 " Find the target template in windows
 "
 " In windows while we clone the symbol link from github
@@ -211,8 +219,7 @@ function <SID>TFind(path, name, up)
 	if l:tmpl != ""
 		return l:tmpl
 	else
-		let l:path = exists("g:template_dir") ? g:template_dir : s:default_template_dir
-		return <SID>TSearch(<SID>NormalizePath(expand(l:path . "/")), a:name, 1)
+		return <SID>TSearch(<SID>NormalizePath(expand(<SID>GetGlobalTemplateDir() . "/")), a:name, 1)
 	endif
 endfunction
 
