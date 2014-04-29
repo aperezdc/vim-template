@@ -44,8 +44,7 @@ In your vimrc you can put:
   template in new files.
 
 * ``let g:templates_name_prefix = .vimtemplate.`` to change the name of the
-  template files that are searched.  *Note* This setting will also affect
-  templates in your global templates directory.  TODO: change this behavior?
+  template files that are searched.
 
 * ``let g:templates_debug = 1`` to have vim-template output debug information
 
@@ -60,8 +59,8 @@ There are a number of options to use a template:
 
     $ vim foo.c
 
-* In a buffer, use ``:Template foo`` to load the template that would be
-  loaded for file with suffix ``foo``. E.g. from within Vim::
+* In a buffer, use ``:Template *.foo`` to load the template that would be
+  loaded for file matching the pattern ``*.foo``. E.g. from within Vim::
 
     :Template c
 
@@ -70,13 +69,13 @@ Template search order
 
 The algorithm to search for templates works like this:
 
-1. A file named ``template.<suffix>`` in the current directory. If not
+1. A file named ``.vim-template:<pattern>`` in the current directory. If not
    found, goto *(2)*. If there are multiple template files that match a given
    suffix in the *same* directory, the one that is most specific is used.
 
 2. Go up a directory and goto *(1)*, if not possible, goto *(3)*.
 
-3. Try to use the ``template.<suffix>`` file supplied with the plugin.
+3. Try to use the ``template:<pattern>`` file supplied with the plugin.
 
 
 Variables in templates
