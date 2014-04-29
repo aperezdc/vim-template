@@ -242,7 +242,7 @@ function <SID>TFind(path, name, up)
 	if l:tmpl != ""
 		return l:tmpl
 	else
-		return <SID>TSearch(<SID>NormalizePath(expand(<SID>GetGlobalTemplateDir() . "/")), "template", a:name, 1)
+		return <SID>TSearch(<SID>NormalizePath(expand(<SID>GetGlobalTemplateDir() . "/")), "template:", a:name, 1)
 	endif
 endfunction
 
@@ -354,7 +354,7 @@ function <SID>TLoadCmd(template)
 		let l:tFile = a:template
 	else
 		let l:depth = exists("g:template_max_depth") ? g:template_max_depth : 0
-		let l:tName = "template" . a:template
+		let l:tName = "template:" . a:template
 		let l:file_name = expand("%:p")
 		let l:file_dir = <SID>DirName(l:file_name)
 
@@ -375,7 +375,7 @@ endfunction
 " suffix, as explained before =)
 "
 fun ListTemplateSuffixes(A,P,L)
-  let l:templates = split(globpath(s:default_template_dir, "template" . a:A . "*"), "\n")
+  let l:templates = split(globpath(s:default_template_dir, "template:" . a:A . "*"), "\n")
   let l:res = []
   for t in templates
     let l:suffix = substitute(t, ".*\\.", "", "")
