@@ -93,16 +93,16 @@ endfunction
 "
 " template.test.py -> ^.*test.py$
 "
-function <SID>TemplateToRegex(template)
+function <SID>TemplateToRegex(template, prefix)
 	let l:template_base_name = fnamemodify(a:template,":t")
-	return '^.*' . strpart(l:template_base_name, len(g:templates_name_prefix)) . '$'
+	return '^.*' . strpart(l:template_base_name, len(a:prefix)) . '$'
 endfunction
 
 " Given a template and filename, return a score on how well the template matches
 " the given filename.  If the template does not match the file name at all,
 " return 0
-function <SID>TemplateBaseNameTest(template,filename)
-	let l:tregex = <SID>TemplateToRegex(a:template)
+function <SID>TemplateBaseNameTest(template, prefix, filename)
+	let l:tregex = <SID>TemplateToRegex(a:template, a:prefix)
 
 	" Ensure that we got a valid regex
 	if l:tregex == ""
@@ -139,7 +139,8 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
-			let l:current_score = <SID>TemplateBaseNameTest(template,a:file_name)
+			let l:current_score = 
+						\<SID>TemplateBaseNameTest(template, a:template_prefix, a:file_name)
 			call <SID>Debug("template: " . template . " got scored: " . l:current_score)
 
 			" Pick that template only if it beats the currently picked template
