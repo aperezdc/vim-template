@@ -125,7 +125,7 @@ function <SID>TemplateToRegex(template, prefix)
 		endif
 	endfor
 
-	return '^.*' . l:template_regex . '$'
+	return '^' . l:template_regex . '$'
 endfunction
 
 " Given a template and filename, return a score on how well the template matches
