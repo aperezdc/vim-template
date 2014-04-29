@@ -95,7 +95,37 @@ endfunction
 "
 function <SID>TemplateToRegex(template, prefix)
 	let l:template_base_name = fnamemodify(a:template,":t")
-	return '^.*' . strpart(l:template_base_name, len(a:prefix)) . '$'
+	let l:template_glob = strpart(l:template_base_name, len(a:prefix))
+
+	" Translate the template's glob into a normal regular expression
+	let l:tr_in = [ '.', '*', '?' ]
+	let l:tr_out = [ '\.', '.*', '\?' ]
+	let l:in_escape_mode = 0
+	let l:template_regex = ""
+	for l:c in split(l:template_glob, '\zs')
+		if l:in_escape_mode == 1
+			if l:c == '\'
+				let l:template_regex = l:template_regex . '\\'
+			else
+				let l:template_regex = l:template_regex . l:c
+			endif
+
+			let l:in_escape_mode = 0
+		else
+			if l:c == '\'
+				let l:in_escape_mode = 1
+			else
+				let l:tr_index = index(l:tr_in, l:c)
+				if l:tr_index != -1
+					let l:template_regex = l:template_regex . l:tr_out[l:tr_index]
+				else
+					let l:template_regex = l:template_regex . l:c
+				endif
+			endif
+		endif
+	endfor
+
+	return '^.*' . l:template_regex . '$'
 endfunction
 
 " Given a template and filename, return a score on how well the template matches
