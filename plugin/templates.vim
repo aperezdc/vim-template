@@ -13,7 +13,7 @@ endif
 let g:templates_plugin_loaded = 1
 
 if !exists('g:templates_name_prefix')
-	let g:templates_name_prefix = "template."
+	let g:templates_name_prefix = ".vim-template:"
 endif
 
 if !exists('g:templates_debug')
@@ -55,6 +55,14 @@ endfunction
 " Default templates directory
 let s:default_template_dir = <SID>DirName(<SID>DirName(expand("<sfile>"))) . "templates"
   
+" Returns the global template directory
+"
+" Returns the user's global template directory if it exists, otherwise returns
+" the default template directory
+function <SID>GetGlobalTemplateDir()
+	return exists("g:template_dir") ? g:template_dir : s:default_template_dir
+endfunction
+
 " Find the target template in windows
 "
 " In windows while we clone the symbol link from github
@@ -85,16 +93,46 @@ endfunction
 "
 " template.test.py -> ^.*test.py$
 "
-function <SID>TemplateToRegex(template)
+function <SID>TemplateToRegex(template, prefix)
 	let l:template_base_name = fnamemodify(a:template,":t")
-	return '^.*' . strpart(l:template_base_name, len(g:templates_name_prefix)) . '$'
+	let l:template_glob = strpart(l:template_base_name, len(a:prefix))
+
+	" Translate the template's glob into a normal regular expression
+	let l:tr_in = [ '.', '*', '?' ]
+	let l:tr_out = [ '\.', '.*', '\?' ]
+	let l:in_escape_mode = 0
+	let l:template_regex = ""
+	for l:c in split(l:template_glob, '\zs')
+		if l:in_escape_mode == 1
+			if l:c == '\'
+				let l:template_regex = l:template_regex . '\\'
+			else
+				let l:template_regex = l:template_regex . l:c
+			endif
+
+			let l:in_escape_mode = 0
+		else
+			if l:c == '\'
+				let l:in_escape_mode = 1
+			else
+				let l:tr_index = index(l:tr_in, l:c)
+				if l:tr_index != -1
+					let l:template_regex = l:template_regex . l:tr_out[l:tr_index]
+				else
+					let l:template_regex = l:template_regex . l:c
+				endif
+			endif
+		endif
+	endfor
+
+	return '^' . l:template_regex . '$'
 endfunction
 
 " Given a template and filename, return a score on how well the template matches
 " the given filename.  If the template does not match the file name at all,
 " return 0
-function <SID>TemplateBaseNameTest(template,filename)
-	let l:tregex = <SID>TemplateToRegex(a:template)
+function <SID>TemplateBaseNameTest(template, prefix, filename)
+	let l:tregex = <SID>TemplateToRegex(a:template, a:prefix)
 
 	" Ensure that we got a valid regex
 	if l:tregex == ""
@@ -122,16 +160,17 @@ endfunction
 " path.  Template files are found by using a glob operation on the current path
 " and the setting of g:templates_name_prefix. If no template is found in the
 " given directory, return an empty string
-function <SID>TDirectorySearch(path, file_name)
+function <SID>TDirectorySearch(path, template_prefix, file_name)
 	let l:picked_template = ""
 	let l:picked_template_score = 0
 
 	" All template files matching
-	let l:templates = glob(a:path . g:templates_name_prefix . "*", 0, 1)
+	let l:templates = glob(a:path . a:template_prefix . "*", 0, 1)
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
-			let l:current_score = <SID>TemplateBaseNameTest(template,a:file_name)
+			let l:current_score = 
+						\<SID>TemplateBaseNameTest(template, a:template_prefix, a:file_name)
 			call <SID>Debug("template: " . template . " got scored: " . l:current_score)
 
 			" Pick that template only if it beats the currently picked template
@@ -163,9 +202,9 @@ endfunction
 "
 " If no template is found an empty string is returned.
 "
-function <SID>TSearch(path, file_name, upwards)
+function <SID>TSearch(path, template_prefix, file_name, upwards)
 	" pick a template from the current path
-	let l:picked_template = <SID>TDirectorySearch(a:path, a:file_name)
+	let l:picked_template = <SID>TDirectorySearch(a:path, a:template_prefix, a:file_name)
 
 	if l:picked_template != ""
 		if !has("win32") || !has("win64")
@@ -182,7 +221,7 @@ function <SID>TSearch(path, file_name, upwards)
 			let l:pathUp = <SID>DirName(a:path)
 			if l:pathUp != a:path
 				" ...and traverse it.
-				return <SID>TSearch(l:pathUp, a:file_name, a:upwards ? a:upwards-1 : 0)
+				return <SID>TSearch(l:pathUp, a:template_prefix, a:file_name, a:upwards ? a:upwards-1 : 0)
 			endif
 		endif
 	endif
@@ -199,12 +238,11 @@ endfunction
 " Returns an empty string if no template is found.
 "
 function <SID>TFind(path, name, up)
-	let l:tmpl = <SID>TSearch(a:path, a:name, a:up)
+	let l:tmpl = <SID>TSearch(a:path, g:templates_name_prefix, a:name, a:up)
 	if l:tmpl != ""
 		return l:tmpl
 	else
-		let l:path = exists("g:template_dir") ? g:template_dir : s:default_template_dir
-		return <SID>TSearch(<SID>NormalizePath(expand(l:path . "/")), a:name, 1)
+		return <SID>TSearch(<SID>NormalizePath(expand(<SID>GetGlobalTemplateDir() . "/")), "template:", a:name, 1)
 	endif
 endfunction
 
@@ -316,7 +354,7 @@ function <SID>TLoadCmd(template)
 		let l:tFile = a:template
 	else
 		let l:depth = exists("g:template_max_depth") ? g:template_max_depth : 0
-		let l:tName = "template." . a:template
+		let l:tName = "template:" . a:template
 		let l:file_name = expand("%:p")
 		let l:file_dir = <SID>DirName(l:file_name)
 
@@ -337,7 +375,7 @@ endfunction
 " suffix, as explained before =)
 "
 fun ListTemplateSuffixes(A,P,L)
-  let l:templates = split(globpath(s:default_template_dir, "template." . a:A . "*"), "\n")
+  let l:templates = split(globpath(s:default_template_dir, "template:" . a:A . "*"), "\n")
   let l:res = []
   for t in templates
     let l:suffix = substitute(t, ".*\\.", "", "")
@@ -348,7 +386,19 @@ fun ListTemplateSuffixes(A,P,L)
 endfun
 command -nargs=1 -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>")
 
+" Syntax autocommands {{{1
+"
+" Enable the vim-template syntax for template files
+" Usually we'd put this in the ftdetect folder, but because
+" g:templates_name_prefix doesn't get defined early enough we have to add the
+" template detection from the plugin itself
+execute "au BufNewFile,BufRead " . g:templates_name_prefix . "* "
+			\. "let b:vim_template_subtype = &filetype | "
+			\. "set ft=vim-template"
 
+execute "au BufNewFile,BufRead " . <SID>GetGlobalTemplateDir() . "/template:* "
+			\. "let b:vim_template_subtype = &filetype | "
+			\. "set ft=vim-template"
 
 " vim: fdm=marker
 
