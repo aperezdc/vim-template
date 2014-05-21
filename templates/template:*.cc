@@ -1,1 +1,1 @@
-template.c
+template:*.c

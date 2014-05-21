@@ -1,1 +1,1 @@
-template.m
+template:*.m
