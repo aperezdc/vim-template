@@ -17,7 +17,7 @@ if !exists('g:templates_name_prefix')
 endif
 
 if !exists('g:templates_global_name_prefix')
-	let g:templates_global_name_prefix = "template:"
+	let g:templates_global_name_prefix = "=template="
 endif
 
 if !exists('g:templates_debug')
