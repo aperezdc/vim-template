@@ -65,6 +65,9 @@ In your vimrc you can put:
 * ``let g:templates_name_prefix = .vimtemplate.`` to change the name of the
   template files that are searched.
 
+* ``let g:templates_global_name_prefix = "template:"`` to change the prefix of the
+  templates in the global template directory.
+
 * ``let g:templates_debug = 1`` to have vim-template output debug information
 
 Usage
