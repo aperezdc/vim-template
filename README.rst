@@ -35,7 +35,7 @@ Updating
 Manually
 --------
 
-In order to update the plugin, go to the its bundle directory and use
+In order to update the plugin, go to its bundle directory and use
 Git to update it:
 
 1. ``cd ~/.vim/bundle/vim-template``
@@ -84,7 +84,7 @@ There are a number of options to use a template:
 * In a buffer, use ``:Template *.foo`` to load the template that would be
   loaded for file matching the pattern ``*.foo``. E.g. from within Vim::
 
-    :Template c
+    :Template *.c
 
 Template search order
 ---------------------
@@ -97,7 +97,7 @@ The algorithm to search for templates works like this:
 
 2. Go up a directory and goto *(1)*, if not possible, goto *(3)*.
 
-3. Try to use the ``template:<pattern>`` file supplied with the plugin.
+3. Try to use the ``=template=<pattern>`` file supplied with the plugin.
 
 
 Variables in templates
