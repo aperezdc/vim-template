@@ -320,6 +320,16 @@ function <SID>TPutCursor()
 	endif
 endfunction
 
+" File name utils
+"
+" Ensures that the given file name is safe to be opened and will not be shell
+" expanded
+function <SID>NeuterFileName(filename)
+	let l:neutered = escape(a:filename, '*')
+	call <SID>Debug("Neutered " . a:filename . " to " . l:neutered)
+	return l:neutered
+endfunction
+
 
 " Template application. {{{1
 
@@ -338,7 +348,8 @@ function <SID>TLoad()
 	let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
 	if l:tFile != ""
 		" Read template file and expand variables in it.
-		execute "0r " . l:tFile
+		let l:safeFileName = <SID>NeuterFileName(l:tFile)
+		execute "0r " . l:safeFileName
 		call <SID>TExpandVars()
 		" This leaves an extra blank line at the bottom, delete it
 		execute line('$') . "d"
