@@ -325,7 +325,7 @@ endfunction
 " Ensures that the given file name is safe to be opened and will not be shell
 " expanded
 function <SID>NeuterFileName(filename)
-	let l:neutered = escape(a:filename, '*')
+	let l:neutered = fnameescape(a:filename)
 	call <SID>Debug("Neutered " . a:filename . " to " . l:neutered)
 	return l:neutered
 endfunction
