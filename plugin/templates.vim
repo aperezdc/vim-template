@@ -346,16 +346,7 @@ function <SID>TLoad()
 	let l:depth = exists("g:template_max_depth") ? g:template_max_depth : 0
 
 	let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
-	if l:tFile != ""
-		" Read template file and expand variables in it.
-		let l:safeFileName = <SID>NeuterFileName(l:tFile)
-		execute "0r " . l:safeFileName
-		call <SID>TExpandVars()
-		" This leaves an extra blank line at the bottom, delete it
-		execute line('$') . "d"
-		call <SID>TPutCursor()
-		setlocal nomodified
-	endif
+	call <SID>TLoadTemplate(l:tFile)
 endfunction
 
 
@@ -375,12 +366,20 @@ function <SID>TLoadCmd(template)
 
 		let l:tFile = <SID>TFind(l:file_dir, a:template, l:depth)
 	endif
+	call <SID>TLoadTemplate(l:tFile)
+endfunction
 
-	if l:tFile != ""
-		execute "0r " . l:tFile
+" Load the given file as a template
+function <SID>TLoadTemplate(template)
+	if a:template != ""
+		" Read template file and expand variables in it.
+		let l:safeFileName = <SID>NeuterFileName(a:template)
+		execute "0r " . l:safeFileName
 		call <SID>TExpandVars()
+		" This leaves an extra blank line at the bottom, delete it
 		execute line('$') . "d"
 		call <SID>TPutCursor()
+		setlocal nomodified
 	endif
 endfunction
 
