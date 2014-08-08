@@ -24,6 +24,18 @@ if !exists('g:templates_debug')
 	let g:templates_debug = 0
 endif
 
+if !exists('g:templates_tr_in')
+	let g:templates_tr_in = [ '.', '*', '?' ]
+endif
+
+if !exists('g:templates_tr_out')
+	let g:templates_tr_out = [ '\.', '.*', '\?' ]
+endif
+
+if !exists('g:templates_fuzzy_start')
+	let g:templates_fuzzy_start = 1
+endif
+
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
 	let g:templates_no_autocmd = 0
@@ -102,8 +114,6 @@ function <SID>TemplateToRegex(template, prefix)
 	let l:template_glob = strpart(l:template_base_name, len(a:prefix))
 
 	" Translate the template's glob into a normal regular expression
-	let l:tr_in = [ '.', '*', '?' ]
-	let l:tr_out = [ '\.', '.*', '\?' ]
 	let l:in_escape_mode = 0
 	let l:template_regex = ""
 	for l:c in split(l:template_glob, '\zs')
@@ -119,9 +129,9 @@ function <SID>TemplateToRegex(template, prefix)
 			if l:c == '\'
 				let l:in_escape_mode = 1
 			else
-				let l:tr_index = index(l:tr_in, l:c)
+				let l:tr_index = index(g:templates_tr_in, l:c)
 				if l:tr_index != -1
-					let l:template_regex = l:template_regex . l:tr_out[l:tr_index]
+					let l:template_regex = l:template_regex . g:templates_tr_out[l:tr_index]
 				else
 					let l:template_regex = l:template_regex . l:c
 				endif
@@ -129,7 +139,12 @@ function <SID>TemplateToRegex(template, prefix)
 		endif
 	endfor
 
-	return '^' . l:template_regex . '$'
+	if g:templates_fuzzy_start
+		return l:template_regex . '$'
+	else
+		return '^' . l:template_regex . '$'
+	endif
+
 endfunction
 
 " Given a template and filename, return a score on how well the template matches

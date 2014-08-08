@@ -70,6 +70,17 @@ In your vimrc you can put:
 
 * ``let g:templates_debug = 1`` to have vim-template output debug information
 
+* ``let g:templates_fuzzy_start = 1`` to be able to name templates with
+  implicit fuzzy matching at the start of a template name.  For example a
+  template file named ``template:.c`` would match ``test.cpp``.
+
+* ``let g:templates_tr_in = [ '.', '_', '?' ]`` and 
+  ``let g:templates_tr_out = [ '\.', '.*', '\?' ]`` would allow you to change
+  how template names are interpretted as regular expressions for matching file
+  names. This might be helpful if hacking on a windows box where ``*`` is not
+  allowed in file names. The above configuration, for example, treates
+  underscores ``_`` as the typical regex wildcard ``.*``.
+
 Usage
 =====
 
