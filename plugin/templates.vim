@@ -184,7 +184,7 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 	let l:picked_template_score = 0
 
 	" All template files matching
-	let l:templates = glob(a:path . a:template_prefix . "*", 0, 1)
+	let l:templates = split(glob(a:path . a:template_prefix . "*"), "\n")
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
