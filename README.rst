@@ -122,7 +122,7 @@ The following variables will be expanded in templates:
     Date in ``YYYY-mm-dd`` format
 ``%TIME%``
     Time in ``HH:MM`` format
-``%FDATE``
+``%FDATE%``
     Full date (date + time), in ``YYYY-mm-dd HH:MM`` format.
 ``%FILE%``
     File name, without extension.
