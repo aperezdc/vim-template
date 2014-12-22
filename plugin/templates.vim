@@ -389,7 +389,7 @@ function <SID>TLoadTemplate(template)
 	if a:template != ""
 		" Read template file and expand variables in it.
 		let l:safeFileName = <SID>NeuterFileName(a:template)
-		execute "0r " . l:safeFileName
+		execute "keepalt 0r " . l:safeFileName
 		call <SID>TExpandVars()
 		" This leaves an extra blank line at the bottom, delete it
 		execute line('$') . "d"
