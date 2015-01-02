@@ -64,7 +64,7 @@ In your vimrc you can put:
 
 * ``let g:templates_directory = '/path/to/directory'`` to specify a directory
   from where to search for additional global templates. See `template search
-  order`_ below for more details.
+  order`_ below for more details. This can also be a list of paths.
 
 * ``let g:templates_name_prefix = '.vimtemplate.'`` to change the name of the
   template files that are searched.

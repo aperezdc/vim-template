@@ -37,7 +37,13 @@ if !exists('g:templates_fuzzy_start')
 endif
 
 if !exists('g:templates_directory')
-	let g:templates_directory = ''
+	let g:templates_directory = []
+elseif type(g:templates_directory) == type('')
+	" Convert string value to a list with one element.
+	let s:tmp = g:templates_directory
+	unlet g:templates_directory
+	let g:templates_directory = [ s:tmp ]
+	unlet s:tmp
 endif
 
 if !exists('g:templates_no_builtin_templates')
@@ -262,15 +268,15 @@ function <SID>TFind(path, name, up)
 		return l:tmpl
 	endif
 
-	if g:templates_directory != ''
-		let l:path = <SID>NormalizePath(expand(g:templates_directory) . '/')
-		if isdirectory(l:path)
-			let l:tmpl = <SID>TSearch(l:path, g:templates_global_name_prefix, a:name, 1)
+	for l:directory in g:templates_directory
+		let l:directory = <SID>NormalizePath(expand(l:directory) . '/')
+		if isdirectory(l:directory)
+			let l:tmpl = <SID>TSearch(l:directory, g:templates_global_name_prefix, a:name, 1)
 			if l:tmpl != ''
 				return l:tmpl
 			endif
 		endif
-	endif
+	endfor
 
 	if g:templates_no_builtin_templates
 		return ''
@@ -446,11 +452,11 @@ if !g:templates_no_builtin_templates
 				\. "set ft=vim-template"
 endif
 
-if g:templates_directory != ''
+for l:directory in g:templates_directory
 	execute "au BufNewFile,BufRead "
-				\. g:templates_directory . "/" . g:templates_global_name_prefix . "* "
+				\. l:directory . "/" . g:templates_global_name_prefix . "* "
 				\. "let b:vim_template_subtype = &filetype | "
 				\. "set ft=vim-template"
-endif
+endfor
 
 " vim: fdm=marker
