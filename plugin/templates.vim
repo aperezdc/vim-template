@@ -40,6 +40,10 @@ if !exists('g:templates_directory')
 	let g:templates_directory = ''
 endif
 
+if !exists('g:templates_no_builtin_templates')
+	let g:templates_disable_builtin = 0
+endif
+
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
 	let g:templates_no_autocmd = 0
@@ -268,6 +272,10 @@ function <SID>TFind(path, name, up)
 		endif
 	endif
 
+	if g:templates_no_builtin_templates
+		return ''
+	endif
+
 	return <SID>TSearch(<SID>NormalizePath(expand(s:default_template_dir) . '/'), g:templates_global_name_prefix, a:name, 1)
 endfunction
 
@@ -431,10 +439,12 @@ execute "au BufNewFile,BufRead " . g:templates_name_prefix . "* "
 			\. "let b:vim_template_subtype = &filetype | "
 			\. "set ft=vim-template"
 
-execute "au BufNewFile,BufRead "
-			\. s:default_template_dir . "/" . g:templates_global_name_prefix . "* "
-			\. "let b:vim_template_subtype = &filetype | "
-			\. "set ft=vim-template"
+if !g:templates_no_builtin_templates
+	execute "au BufNewFile,BufRead "
+				\. s:default_template_dir . "/" . g:templates_global_name_prefix . "* "
+				\. "let b:vim_template_subtype = &filetype | "
+				\. "set ft=vim-template"
+endif
 
 if g:templates_directory != ''
 	execute "au BufNewFile,BufRead "

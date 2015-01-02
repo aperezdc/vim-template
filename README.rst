@@ -85,6 +85,9 @@ In your vimrc you can put:
   allowed in file names. The above configuration, for example, treates
   underscores ``_`` as the typical regex wildcard ``.*``.
 
+* ``let g:templates_no_builtin_templates = 1`` to disable usage of the
+  built-in templates. See `template search order`_ below for more details.
+
 
 Usage
 =====
@@ -117,7 +120,8 @@ The algorithm to search for templates works like this:
    using the ``g:templates_directory`` option (only if the option is defined
    and the directory exists).
 
-3. Try to use the ``=template=<pattern>`` file supplied with the plugin.
+3. Try to use the ``=template=<pattern>`` file supplied with the plugin (only
+   if ``g:templates_no_builtin_templates`` was not defined).
 
 
 Variables in templates
