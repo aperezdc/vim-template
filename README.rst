@@ -62,10 +62,14 @@ In your vimrc you can put:
 * ``let g:templates_no_autocmd = 1`` to disable automatic insertion of
   template in new files.
 
-* ``let g:templates_name_prefix = .vimtemplate.`` to change the name of the
+* ``let g:templates_directory = '/path/to/directory'`` to specify a directory
+  from where to search for additional global templates. See `template search
+  order`_ below for more details.
+
+* ``let g:templates_name_prefix = '.vimtemplate.'`` to change the name of the
   template files that are searched.
 
-* ``let g:templates_global_name_prefix = "template:"`` to change the prefix of the
+* ``let g:templates_global_name_prefix = 'template:'`` to change the prefix of the
   templates in the global template directory.
 
 * ``let g:templates_debug = 1`` to have vim-template output debug information
@@ -80,6 +84,7 @@ In your vimrc you can put:
   names. This might be helpful if hacking on a windows box where ``*`` is not
   allowed in file names. The above configuration, for example, treates
   underscores ``_`` as the typical regex wildcard ``.*``.
+
 
 Usage
 =====
@@ -107,6 +112,10 @@ The algorithm to search for templates works like this:
    suffix in the *same* directory, the one that is most specific is used.
 
 2. Go up a directory and goto *(1)*, if not possible, goto *(3)*.
+
+3. Try to use the ``=template=<pattern>`` file from the directory specified
+   using the ``g:templates_directory`` option (only if the option is defined
+   and the directory exists).
 
 3. Try to use the ``=template=<pattern>`` file supplied with the plugin.
 

@@ -36,6 +36,10 @@ if !exists('g:templates_fuzzy_start')
 	let g:templates_fuzzy_start = 1
 endif
 
+if !exists('g:templates_directory')
+	let g:templates_directory = ''
+endif
+
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
 	let g:templates_no_autocmd = 0
@@ -70,14 +74,6 @@ endfunction
 
 " Default templates directory
 let s:default_template_dir = <SID>DirName(<SID>DirName(expand("<sfile>"))) . "templates"
-  
-" Returns the global template directory
-"
-" Returns the user's global template directory if it exists, otherwise returns
-" the default template directory
-function <SID>GetGlobalTemplateDir()
-	return exists("g:template_dir") ? g:template_dir : s:default_template_dir
-endfunction
 
 " Find the target template in windows
 "
@@ -252,17 +248,27 @@ endfunction
 " Tries to find valid templates using the global g:templates_name_prefix as a glob
 " matcher for template files. The search is done as follows:
 "   1. The [path] passed to the function, [upwards] times up.
-"   2. The g:template_dir directory, if it exists.
+"   2. The g:templates_directory directory, if it exists.
 "   3. Built-in templates from s:default_template_dir.
 " Returns an empty string if no template is found.
 "
 function <SID>TFind(path, name, up)
 	let l:tmpl = <SID>TSearch(a:path, g:templates_name_prefix, a:name, a:up)
-	if l:tmpl != ""
+	if l:tmpl != ''
 		return l:tmpl
-	else
-		return <SID>TSearch(<SID>NormalizePath(expand(<SID>GetGlobalTemplateDir() . "/")), g:templates_global_name_prefix, a:name, 1)
 	endif
+
+	if g:templates_directory != ''
+		let l:path = <SID>NormalizePath(expand(g:templates_directory) . '/')
+		if isdirectory(l:path)
+			let l:tmpl = <SID>TSearch(l:path, g:templates_global_name_prefix, a:name, 1)
+			if l:tmpl != ''
+				return l:tmpl
+			endif
+		endif
+	endif
+
+	return <SID>TSearch(<SID>NormalizePath(expand(s:default_template_dir) . '/'), g:templates_global_name_prefix, a:name, 1)
 endfunction
 
 
@@ -426,9 +432,15 @@ execute "au BufNewFile,BufRead " . g:templates_name_prefix . "* "
 			\. "set ft=vim-template"
 
 execute "au BufNewFile,BufRead "
-			\. <SID>GetGlobalTemplateDir() . "/" . g:templates_global_name_prefix . "* "
+			\. s:default_template_dir . "/" . g:templates_global_name_prefix . "* "
 			\. "let b:vim_template_subtype = &filetype | "
 			\. "set ft=vim-template"
 
-" vim: fdm=marker
+if g:templates_directory != ''
+	execute "au BufNewFile,BufRead "
+				\. g:templates_directory . "/" . g:templates_global_name_prefix . "* "
+				\. "let b:vim_template_subtype = &filetype | "
+				\. "set ft=vim-template"
+endif
 
+" vim: fdm=marker
