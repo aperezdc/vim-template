@@ -41,7 +41,7 @@ if !exists('g:templates_directory')
 endif
 
 if !exists('g:templates_no_builtin_templates')
-	let g:templates_disable_builtin = 0
+	let g:templates_no_builtin_templates = 0
 endif
 
 " Put template system autocommands in their own group. {{{1
