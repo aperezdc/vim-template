@@ -452,11 +452,15 @@ if !g:templates_no_builtin_templates
 				\. "set ft=vim-template"
 endif
 
-for l:directory in g:templates_directory
-	execute "au BufNewFile,BufRead "
-				\. l:directory . "/" . g:templates_global_name_prefix . "* "
-				\. "let b:vim_template_subtype = &filetype | "
-				\. "set ft=vim-template"
+for s:directory in g:templates_directory
+	let s:directory = <SID>NormalizePath(expand(s:directory) . '/')
+	if isdirectory(s:directory)
+		execute "au BufNewFile,BufRead "
+					\. s:directory . "/" . g:templates_global_name_prefix . "* "
+					\. "let b:vim_template_subtype = &filetype | "
+					\. "set ft=vim-template"
+	endif
+	unlet s:directory
 endfor
 
 " vim: fdm=marker
