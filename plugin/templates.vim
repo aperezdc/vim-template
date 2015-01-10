@@ -407,6 +407,7 @@ endfunction
 " Load the given file as a template
 function <SID>TLoadTemplate(template)
 	if a:template != ""
+		let l:deleteLastLine = 0
 		if line('$') == 1 && getline(1) == ''
 			let l:deleteLastLine = 1
 		endif
