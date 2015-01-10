@@ -407,12 +407,20 @@ endfunction
 " Load the given file as a template
 function <SID>TLoadTemplate(template)
 	if a:template != ""
+		if line('$') == 1 && getline(1) == ''
+			let l:deleteLastLine = 1
+		endif
+
 		" Read template file and expand variables in it.
 		let l:safeFileName = <SID>NeuterFileName(a:template)
 		execute "keepalt 0r " . l:safeFileName
 		call <SID>TExpandVars()
-		" This leaves an extra blank line at the bottom, delete it
-		execute line('$') . "d"
+
+		if l:deleteLastLine == 1
+			" Loading a template into an empty buffer leaves an extra blank line at the bottom, delete it
+			execute line('$') . "d"
+		endif
+
 		call <SID>TPutCursor()
 		setlocal nomodified
 	endif
