@@ -305,7 +305,7 @@ function <SID>TExpandVars()
 	let l:date       = exists("g:dateformat") ? strftime(g:dateformat) :
 				     \ (l:year . "-" . l:month . "-" . l:day)
 	let l:fdate      = l:date . " " . l:time
-	let l:filen      = expand("%:t:r")
+	let l:filen      = expand("%:t:r:r:r")
 	let l:filex      = expand("%:e")
 	let l:filec      = expand("%:t")
 	let l:fdir       = expand("%:p:h:t")
