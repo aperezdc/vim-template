@@ -50,6 +50,10 @@ if !exists('g:templates_no_builtin_templates')
 	let g:templates_no_builtin_templates = 0
 endif
 
+if !exists('g:templates_user_variables')
+	let g:templates_user_variables = []
+endif
+
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
 	let g:templates_no_autocmd = 0
@@ -337,6 +341,12 @@ function <SID>TExpandVars()
 	call <SID>TExpand("MACROCLASS", l:macroclass)
 	call <SID>TExpand("CAMELCLASS", l:camelclass)
 	call <SID>TExpand("LICENSE", exists("g:license") ? g:license : "MIT")
+
+	" Perform expansions for user-defined variables
+	for [l:varname, l:funcname] in g:templates_user_variables
+		let l:value = function(funcname)()
+		call <SID>TExpand(l:varname, l:value)
+	endfor
 endfunction
 
 " }}}2

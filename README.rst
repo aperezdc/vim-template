@@ -88,6 +88,10 @@ In your vimrc you can put:
 * ``let g:templates_no_builtin_templates = 1`` to disable usage of the
   built-in templates. See `template search order`_ below for more details.
 
+* ``let g:templates_user_variables = [[USERVAR, UserFunc]]`` to enable
+  user-defined variable expanding. See `User-defined variable expanding`_
+  below for details.
+
 
 Usage
 =====
@@ -163,4 +167,23 @@ The following variables will be expanded in templates:
 ``%HERE%``
     Expands to nothing, but ensures that the cursor will be placed in its
     position after expanding the template.
+
+User-defined variable expanding
+-------------------------------
+
+You can set ``g:templates_user_variables`` to expand custom variables. It should
+be something like ``[['USERVAR1', 'UserFunc1'], ['USERVAR2', 'UserFunc2']]``,
+where ``USERVAR1`` is the variable to be expanded and ``UserFunc1`` is the name of
+the function that returns the result. The function should take no arguments and
+return the string after expansion.
+
+Example:::
+
+    let g:templates_user_variables = [['FULLPATH', 'GetFullPath']]
+    function GetFullPath()
+        return expand('%:p')
+    endfunction
+
+And each occurrence of ``%FULLPATH%`` in template will be replaced with the full
+path of current file.
 
