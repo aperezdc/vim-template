@@ -289,13 +289,19 @@ function <SID>TFind(path, name, up)
 	return <SID>TSearch(<SID>NormalizePath(expand(s:default_template_dir) . '/'), g:templates_global_name_prefix, a:name, 1)
 endfunction
 
+" Escapes a string for use in a regex expression where the regex uses / as the
+" delimiter. Must be used with Magic Mode off /V
+"
+function <SID>EscapeRegex(raw)
+	return escape(a:raw, '/')
+endfunction
 
 " Template variable expansion. {{{1
 
 " Makes a single [variable] expansion, using [value] as replacement.
 "
 function <SID>TExpand(variable, value)
-	silent! execute "%s/%" . a:variable . "%/" .  a:value . "/g"
+	silent! execute "%s/\\V%" . <SID>EscapeRegex(a:variable) . "%/" .  <SID>EscapeRegex(a:value) . "/g"
 endfunction
 
 " Performs variable expansion in a template once it was loaded {{{2
