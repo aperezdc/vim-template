@@ -315,7 +315,7 @@ function <SID>TExpandVars()
 	let l:date       = exists("g:dateformat") ? strftime(g:dateformat) :
 				     \ (l:year . "-" . l:month . "-" . l:day)
 	let l:fdate      = l:date . " " . l:time
-	let l:filen      = expand("%:t:r:r:r")
+	let l:filen      = substitute(expand("%:t:r:r:r"), "[\-_]test$", "", "")
 	let l:filex      = expand("%:e")
 	let l:filec      = expand("%:t")
 	let l:fdir       = expand("%:p:h:t")
@@ -323,10 +323,19 @@ function <SID>TExpandVars()
 	let l:user       = exists("g:username") ? g:username :
 				     \ (exists("g:user") ? g:user : $USER)
 	let l:email      = exists("g:email") ? g:email : (l:user . "@" . l:hostn)
-	let l:guard      = toupper(substitute(l:filec, "[^a-zA-Z0-9]", "_", "g"))
+	let l:guard      = "_" . toupper(substitute(l:filec, "[^a-zA-Z0-9]", "_", "g")) . "_"
 	let l:class      = substitute(l:filen, "\\([a-zA-Z]\\+\\)", "\\u\\1\\e", "g")
 	let l:macroclass = toupper(l:class)
 	let l:camelclass = substitute(l:class, "_", "", "g")
+  let l:testclass = l:camelclass . "Test"
+  let l:testvar = tolower(l:class) . "_"
+  let l:project    = exists("g:project") ? g:project : '<<your_project: g:project>>'
+  if exists("g:project")
+    let l:guard = toupper(g:project) . l:guard
+    let l:namespace  = tolower(substitute(g:project, "[^a-zA-Z0-9]", "_", "g"))
+  else
+    let l:namespace = ""
+  endif
 
 	" Finally, perform expansions
 	call <SID>TExpand("DAY",   l:day)
@@ -347,6 +356,10 @@ function <SID>TExpandVars()
 	call <SID>TExpand("MACROCLASS", l:macroclass)
 	call <SID>TExpand("CAMELCLASS", l:camelclass)
 	call <SID>TExpand("LICENSE", exists("g:license") ? g:license : "MIT")
+	call <SID>TExpand("PROJECT", l:project)
+	call <SID>TExpand("NAMESPACE", l:namespace)
+	call <SID>TExpand("TESTCLASS", l:testclass)
+	call <SID>TExpand("TESTVAR", l:testvar)
 
 	" Perform expansions for user-defined variables
 	for [l:varname, l:funcname] in g:templates_user_variables
@@ -363,6 +376,7 @@ endfunction
 "
 function <SID>TPutCursor()
 	0  " Go to first line before searching
+  execute "normal! zR"
 	if search("%HERE%", "W")
 		let l:column = col(".")
 		let l:lineno = line(".")
