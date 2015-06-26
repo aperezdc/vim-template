@@ -151,6 +151,8 @@ The following variables will be expanded in templates:
     Current user's e-mail address. May be overriden by defining ``g:email``.
 ``%USER%``
     Current logged-in user name. May be overriden by defining ``g:username``.
+``%LICENSE%``
+    MIT by default. May be overriden by defining ``g:license``.
 ``%HOST%``
     Host name.
 ``%GUARD%``
