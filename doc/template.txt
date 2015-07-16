@@ -1,0 +1,232 @@
+*template.txt*  Simple templates plug-in
+
+CONTENTS                                           *template-contents*
+
+Introduction                  |template-introduction|
+Usage                         |template-usage|
+Commands                      |template-commands|
+Configuration                 |template-configuration|
+Search order                  |template-search-order|
+Variables                     |template-variables|
+User Variables                |template-user-variables|
+
+
+===========================================================================
+INTRODUCTION                                       *template-introduction*
+
+This is a simple plug-in for Vim (and NeoVim) allowing to have template
+files per file type, which will be used as starting point when creating
+new buffers. Template files may contain variables (|template-variables|),
+which are expanded at the time of buffer creation (see |template-usage|).
+The main purpose of the templates is to add boilerplate code to new
+files, like C/C++ header guards, or license disclaimers.
+
+
+===========================================================================
+USAGE                                                    *template-usage*
+
+Templates can be used by creating a new file name, the file suffix will
+determine which template is used:
+>
+	$ vim foo.c
+<
+Templates can be manually expanded in the current buffer using the
+|:Template| command. For example, the following will load and expand the
+template for a file matching the pattern `*.c`:
+>
+	:Template *.c
+<
+
+Note that automatic insertion of templates can be disabling by setting
+the `g:templates_no_autocmd` variable.
+
+
+===========================================================================
+COMMANDS                                              *template-commands*
+
+The plug-in defines a single command, which expands a template in the
+current buffer. Its syntax is:
+
+*:Template* <pattern>
+
+The <pattern> must be the same as for the template file that is to be
+expanded into the current buffer. For example:
+>
+	:Template *.c
+>
+will expand the local template `.vim-template:*.c`, or the global template
+`template:*.c`, whichever is found first (see |templates-search-order|
+for more information).
+
+
+===========================================================================
+CONFIGURATION                                    *template-configuration*
+
+The following variables can be used to configure the behaviour of the
+plug-in:
+
+`g:templates_no_autocmd`
+		Whether to disable automatic insertion of templates when new
+		buffers are created. (Default: `0`).
+
+`g:templates_directory`
+		Path of a directory containing additional global templates.
+		Alternatively, it can contain a list of paths, which will
+		be searched in order. See |template-search-order| for more
+		details. (Default: empty).
+
+`g:templates_name_prefix`
+		Prefix for local templates. See |template-search-order| for
+		more details. (Default: `.vim-template:`).
+
+`g:templates_global_name_prefix`
+		Prefix for global templates. See |template-search-order| for
+		more details. (Default: `template:`).
+
+`g:templates_fuzzy_start`
+		If non-zero, templates are searched with implicit fuzzy
+		matching at the start of the template name. For example,
+		a file named `template:.c` would match `test.cpp`, but also
+		`test.cs`, `test.cxx`, and `test.cc`. (Default: `1`).
+
+`g:templates_tr_in`, and `g:templates_tr_out`
+		These variables control how template names are interpreted as
+		regular expressions for matching file names. This can be
+		useful on a Windows box where `*` is not allowed in file
+		names. The default configuration converts underscores (`_`)
+		into regular expression wildcards (`.*`).
+		
+		(Default: `['.','_','?']`, and `['\.','.*','\?']`).
+		
+`g:templates_no_builtin_templates`
+		If non-zero, disables usage of the built-in templates. See
+		|template-search-order| for more details. (Default: `0`).
+
+`g:templates_user_variables`
+		Allows expansion of user-defined variables. See
+		|template-user-variables| for more details.
+		(Default: `[]`).
+
+`g:templates_debug`
+		If non-zero, output debugging information. (Default: `0`).
+
+`g:templates_plugin_loaded`
+		Setting this to a non-zero value will disable the plug-in.
+		(Default: `0`).
+
+
+===========================================================================
+SEARCH ORDER                                      *template-search-order*
+
+Searching for templates uses the following logic:
+
+1. If a file named `.vim-template:<pattern>` exists in the current
+   directory, it is used. If there are multiple template files that match
+   pattern in the same directory, the one that is most specific is used.
+   If no suitable template is found, goto step `(2)`.
+
+2. If a parent directory exists, it is set as current directory, and goto
+   step `(1)`; otherwise goto step `(3)`.
+
+3. Try to use `template:<pattern>` file from the directory specified using
+   the `g:templates_directory` variable (only if the option is defined,
+   and the directory exists).
+
+4. Try to use the `template:<pattern>` file supplied with the plug-in (only
+   if `g:templates_no_builtin_templates` is undefined or has a zero value).
+
+Note that the `.vim-template:` local file prefix can be set using the
+`g:templates_name_prefix` variable, and the `template:` global file prefix
+can be set using the `g:templates_global_name_prefix` variable.
+
+
+===========================================================================
+VARIABLES                                            *template-variables*
+
+Template variables are all-caps identifiers surrounded by percent signs,
+e.g. `%VAR%`. The following variables are available for expansion in
+templates:
+
+`%DAY%`, `%YEAR%`, `%MONTH`
+		Current day of the month, year, and month of the year,
+		as numeric values.
+
+`%DATE%`
+		Current date in `YYYY-mm-dd` format. This is equivalent
+		to expanding `%YEAR%-%MONTH%-%DAY%`.
+
+`%TIME%`
+		Current time in `HH:MM` format.
+
+`%FDATE%`
+		Current full date (date and time) in `YYYY-mm-dd HH:MM`
+		format. This is equivalent to expanding `%DATE% %TIME%`.
+
+`%FILE%`
+		File name, without extension.
+
+`%EXT%`
+		File extension (component after the last period).
+
+`%FFILE%`
+		File name, with extension. This is equivalent to
+		expanding `%FILE%.%EXT%`.
+
+`%MAIL%`
+		E-mail address of the current user. May be overriden by
+		defining the `g:email` variable.
+
+`%USER%`
+		Current logged-in user name. May be overriden by defining
+		the `g:username` variable.
+
+`%LICENSE%`
+		Expands to the string `MIT` by default. May be overriden
+		by definining the `g:license` variable.
+
+`%HOST%`
+		Current host name.
+
+`%GUARD%`
+		A string containing only alphanumeric characters, and
+		underscores, suitable to be used as preprocessor guards
+		for C/C++/Objective-C header file.
+
+`%CLASS%`
+		File name, without extension, and the first character of
+		each word capitalised. This is typically used for Java/C++
+		class names.
+`%MACROCLASS%`
+		File name, without extension, in all-capitals.
+
+`%CAMELCLASS%`
+		File name, without extension, with the first character of
+		every work capitalised, and underscores removed.
+
+`%HERE%`
+	Expands to nothing, but ensures that the cursor will be placed in
+	the position where this variable appears after expanding the template.
+
+
+===========================================================================
+USER VARIABLES                                  *template-user-variables*
+
+The `g:templates_user_variables` variable allows to expand user-defined
+variables in templates. It should be set to an array, where each item is
+a two-element array: the first element is the name of the user-defined
+variable, and the second element the name of a function. For example,
+the following can be added to the user |vimrc|:
+>
+	let g:templates_user_variables = [
+		\   ['FULLPATH', 'GetFullPath'],
+		\ ]
+
+	function! GetFullPath()
+		return expand('%:p')
+	endfunction
+>
+This way, each occurrence of `%FULLPATH%` in a template will be replaced
+with the absolute path of the current file.
+
+
+vim:tw=78:sw=8:ts=8:ft=help:norl:noet
