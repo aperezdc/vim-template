@@ -81,7 +81,7 @@ plug-in:
 
 `g:templates_global_name_prefix`
 		Prefix for global templates. See |template-search-order| for
-		more details. (Default: `template:`).
+		more details. (Default: `=template=`).
 
 `g:templates_fuzzy_start`
 		If non-zero, templates are searched with implicit fuzzy
