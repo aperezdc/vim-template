@@ -193,8 +193,16 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 	let l:picked_template = ""
 	let l:picked_template_score = 0
 
-	" All template files matching
-	let l:templates = split(glob(a:path . a:template_prefix . "*"), "\n")
+	" Use find if possible as it will also get hidden files on nix systems. Use
+	" builtin glob as a fallback
+	if executable("find")
+		let l:find_cmd = '`find ''' . a:path . a:template_prefix . ''' -maxdepth 1 -type f`'
+		call <SID>Debug("Executing " . l:find_cmd)
+		let l:glob_results = glob(l:find_cmd)
+	else
+		let l:glob_results = glob(a:path . a:template_prefix . "*")
+	endif
+	let l:templates = split(l:glob_results, "\n")
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
