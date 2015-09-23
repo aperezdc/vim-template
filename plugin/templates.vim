@@ -195,7 +195,7 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 
 	" Use find if possible as it will also get hidden files on nix systems. Use
 	" builtin glob as a fallback
-	if executable("find")
+	if executable("find") && !has("win32") && !has("win64")
 		let l:find_cmd = '`find ''' . a:path . ''' -maxdepth 1 -type f -name ''' . a:template_prefix . '*''`'
 		call <SID>Debug("Executing " . l:find_cmd)
 		let l:glob_results = glob(l:find_cmd)
