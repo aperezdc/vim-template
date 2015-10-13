@@ -114,6 +114,16 @@ plug-in:
 		Setting this to a non-zero value will disable the plug-in.
 		(Default: `0`).
 
+`g:templates_search_height`
+		Controls the search in the current directory and parents.  If
+		set to -1, the template is searched for in the given
+		directory and all parents in its directory structure, stopping
+		at the first matching template.  If set to 0, no searching
+		is done in the given directory or any parents. If set to [1]
+		only the given directory is searched. If greater
+		than one, n parents and the given directory will be searched
+		where n is equal to height - 1. (Default: `-1`).
+
 
 ===========================================================================
 SEARCH ORDER                                      *template-search-order*

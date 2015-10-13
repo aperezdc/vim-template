@@ -36,6 +36,18 @@ if !exists('g:templates_fuzzy_start')
 	let g:templates_fuzzy_start = 1
 endif
 
+if !exists('g:templates_search_height')
+	" First try to find the deprecated option
+	if exists('g:template_max_depth')
+		echom('g:template_max_depth is deprecated in favor of g:templates_search_height')
+		let g:templates_search_height = g:template_max_depth != 0 ? g:template_max_depth : -1
+	endif
+
+	if(!exists('g:templates_search_height'))
+		let g:templates_search_height = -1
+	endif
+endif
+
 if !exists('g:templates_directory')
 	let g:templates_directory = []
 elseif type(g:templates_directory) == type('')
@@ -231,38 +243,36 @@ endfunction
 
 " Searches for a [template] in a given [path].
 "
-" If [upwards] is [1] the template is searched only in the given directory;
-" if it's zero it is searched all along the directory structure, going to
-" parent directory whenever a template is *not* found for a given [path]. If
-" it's greater than zero [upwards] is the maximum depth of directories that
-" will be traversed.
+" If [height] is [-1] the template is searched for in the given directory and
+" all parents in its directory structure
+"
+" If [height] is [0] no searching is done in the given directory or any
+" parents
+"
+" If [height] is [1] only the given directory is searched
+"
+" If [height] is greater than one, n parents and the given directory will be
+" searched where n is equal to height - 1
 "
 " If no template is found an empty string is returned.
 "
-function <SID>TSearch(path, template_prefix, file_name, upwards)
-	" pick a template from the current path
-	let l:picked_template = <SID>TDirectorySearch(a:path, a:template_prefix, a:file_name)
+function <SID>TSearch(path, template_prefix, file_name, height)
+	if (a:height != 0)
 
-	if l:picked_template != ""
-		if !has("win32") || !has("win64")
+		" pick a template from the current path
+		let l:picked_template = <SID>TDirectorySearch(a:path, a:template_prefix, a:file_name)
+		if l:picked_template != ""
 			return l:picked_template
 		else
-			echoerr( "Not yet implemented" )
-			" TODO
-			" return a:path . <SID>TFindLink(a:path, a:template)
-		endif
-	else
-		" File not found/not readable.
-		if (a:upwards == 0) || (a:upwards > 1)
-			" Check wether going upwards results in a different path...
 			let l:pathUp = <SID>DirName(a:path)
 			if l:pathUp != a:path
-				" ...and traverse it.
-				return <SID>TSearch(l:pathUp, a:template_prefix, a:file_name, a:upwards ? a:upwards-1 : 0)
+				let l:new_height = a:height >= 0 ? a:height - 1 : a:height
+				return <SID>TSearch(l:pathUp, a:template_prefix, a:file_name, l:new_height)
 			endif
 		endif
 	endif
-	" Ooops, either we cannot go up in the path or [upwards] reached 1
+
+	" Ooops, either we cannot go up in the path or [height] reached 0
 	return ""
 endfunction
 
@@ -402,8 +412,7 @@ function <SID>TLoad()
 
 	let l:file_name = expand("%:p")
 	let l:file_dir = <SID>DirName(l:file_name)
-	let l:depth = exists("g:template_max_depth") ? g:template_max_depth : 0
-
+	let l:depth = g:templates_search_height
 	let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
 	call <SID>TLoadTemplate(l:tFile)
 endfunction
@@ -418,12 +427,12 @@ function <SID>TLoadCmd(template)
 	if filereadable(a:template)
 		let l:tFile = a:template
 	else
-		let l:depth = exists("g:template_max_depth") ? g:template_max_depth : 0
+		let l:height = g:templates_search_height
 		let l:tName = g:templates_global_name_prefix . a:template
 		let l:file_name = expand("%:p")
 		let l:file_dir = <SID>DirName(l:file_name)
 
-		let l:tFile = <SID>TFind(l:file_dir, a:template, l:depth)
+		let l:tFile = <SID>TFind(l:file_dir, a:template, l:height)
 	endif
 	call <SID>TLoadTemplate(l:tFile)
 endfunction
