@@ -73,21 +73,26 @@ plug-in:
 		Path of a directory containing additional global templates.
 		Alternatively, it can contain a list of paths, which will
 		be searched in order. See |template-search-order| for more
-		details. (Default: empty).
+		details. (Default: `[]`).
 
 `g:templates_name_prefix`
-		Prefix for local templates. See |template-search-order| for
-		more details. (Default: `.vim-template:`).
+		Prefix for path-relative templates. See |template-search-order|
+		for more details. (Default: `.vim-template:`).
 
 `g:templates_global_name_prefix`
-		Prefix for global templates. See |template-search-order| for
-		more details. (Default: `=template=`).
+		Prefix for global templates (builtin and those listed in
+		`g:templates_directory`, NOT path-relative templates). See
+		|template-search-order| for more details. (Default:
+		`=template=`).
 
 `g:templates_fuzzy_start`
-		If non-zero, templates are searched with implicit fuzzy
-		matching at the start of the template name. For example,
-		a file named `template:.c` would match `test.cpp`, but also
-		`test.cs`, `test.cxx`, and `test.cc`. (Default: `1`).
+		If non-zero, template patterns are not forced to match the
+		entire file name, just the end (`<pattern>$`). If zero, template
+		patterns need to consume the entire file name to procure a match
+		(`^<pattern>$`).  For example, if `g:templates_fuzzy_start = 1`,
+		a file named `template:.c` would match files named `.c` and
+		`test.c`. If set to zero, the template would only match `.c`
+		(Default: `1`).
 
 `g:templates_tr_in`, and `g:templates_tr_out`
 		These variables control how template names are interpreted as
@@ -96,7 +101,7 @@ plug-in:
 		names. The default configuration converts underscores (`_`)
 		into regular expression wildcards (`.*`).
 		
-		(Default: `['.','_','?']`, and `['\.','.*','\?']`).
+		(Default: `['.','*','?']`, and `['\.','.*','\?']`).
 		
 `g:templates_no_builtin_templates`
 		If non-zero, disables usage of the built-in templates. See
@@ -138,16 +143,18 @@ Searching for templates uses the following logic:
 2. If a parent directory exists, it is set as current directory, and goto
    step `(1)`; otherwise goto step `(3)`.
 
-3. Try to use `template:<pattern>` file from the directory specified using
+3. Try to use `=template=<pattern>` file from the directories specified using
    the `g:templates_directory` variable (only if the option is defined,
    and the directory exists).
 
-4. Try to use the `template:<pattern>` file supplied with the plug-in (only
+4. Try to use the `=template=<pattern>` file supplied with the plug-in (only
    if `g:templates_no_builtin_templates` is undefined or has a zero value).
 
 Note that the `.vim-template:` local file prefix can be set using the
-`g:templates_name_prefix` variable, and the `template:` global file prefix
-can be set using the `g:templates_global_name_prefix` variable.
+`g:templates_name_prefix` variable, and the `=template=` global file prefix
+can be set using the `g:templates_global_name_prefix` variable. The variable
+`g:templates_search_height` controls searching the current directory and
+parents.
 
 
 ===========================================================================
@@ -214,8 +221,8 @@ templates:
 		every work capitalised, and underscores removed.
 
 `%HERE%`
-	Expands to nothing, but ensures that the cursor will be placed in
-	the position where this variable appears after expanding the template.
+		Expands to nothing, but ensures that the cursor will be placed in
+		the position where this variable appears after expanding the template.
 
 
 ===========================================================================
