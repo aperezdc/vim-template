@@ -452,7 +452,7 @@ function <SID>TLoadTemplate(template)
 
 		if l:deleteLastLine == 1
 			" Loading a template into an empty buffer leaves an extra blank line at the bottom, delete it
-			execute line('$') . "d"
+			execute line('$') . "d _"
 		endif
 
 		call <SID>TPutCursor()
