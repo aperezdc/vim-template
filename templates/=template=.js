@@ -4,4 +4,8 @@
  *
  * Distributed under terms of the %LICENSE% license.
  */
-%HERE%
+(function(){
+  'use strict';
+  
+  %HERE%  
+})();
