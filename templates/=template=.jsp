@@ -1,5 +1,5 @@
-<%@ page contentType="text/html;Charset=UTF-8" pageEdcoding="UTF-8" %>
-<%@ taglib prefix="" tagdir="/WEB-INF/tags"/>
+<%@ page contentType="text/html;Charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="" tagdir="/WEB-INF/tags"%>
 
 <html lang="en">
 <head>
