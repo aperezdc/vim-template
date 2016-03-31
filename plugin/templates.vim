@@ -418,7 +418,7 @@ function <SID>TLoad()
 	let l:file_dir = <SID>DirName(l:file_name)
 	let l:depth = g:templates_search_height
 	let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
-	call <SID>TLoadTemplate(l:tFile)
+	call <SID>TLoadTemplate(l:tFile, 0)
 endfunction
 
 
@@ -427,7 +427,7 @@ endfunction
 " a template suffix (and the template is searched as usual). Of course this
 " makes variable expansion and cursor positioning.
 "
-function <SID>TLoadCmd(template)
+function <SID>TLoadCmd(template, position)
 	if filereadable(a:template)
 		let l:tFile = a:template
 	else
@@ -438,11 +438,11 @@ function <SID>TLoadCmd(template)
 
 		let l:tFile = <SID>TFind(l:file_dir, a:template, l:height)
 	endif
-	call <SID>TLoadTemplate(l:tFile)
+	call <SID>TLoadTemplate(l:tFile, a:position)
 endfunction
 
 " Load the given file as a template
-function <SID>TLoadTemplate(template)
+function <SID>TLoadTemplate(template, position)
 	if a:template != ""
 		let l:deleteLastLine = 0
 		if line('$') == 1 && getline(1) == ''
@@ -451,7 +451,11 @@ function <SID>TLoadTemplate(template)
 
 		" Read template file and expand variables in it.
 		let l:safeFileName = <SID>NeuterFileName(a:template)
-		execute "keepalt 0r " . l:safeFileName
+		if a:position == 0
+			execute "keepalt 0r " . l:safeFileName
+		else
+			execute "keepalt r " . l:safeFileName
+		endif
 		call <SID>TExpandVars()
 
 		if l:deleteLastLine == 1
@@ -479,7 +483,8 @@ fun ListTemplateSuffixes(A,P,L)
 
   return l:res
 endfun
-command -nargs=1 -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>")
+command -nargs=1 -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>", 0)
+command -nargs=1 -complete=customlist,ListTemplateSuffixes TemplateHere call <SID>TLoadCmd("<args>", 1)
 
 " Syntax autocommands {{{1
 "
