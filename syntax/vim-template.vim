@@ -1,6 +1,6 @@
 " vim-template syntax file
 " Language:	vim-template
-" Maintainer:	Stephen Chandler Paul <thatslyude@gmail.com>
+" Maintainer:	Lyude Paul <thatslyude@gmail.com>
 " Last Change:	2014 April 21
 
 if exists("b:current_syntax")
