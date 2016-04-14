@@ -12,7 +12,7 @@ if b:vim_template_subtype != ""
 	unlet b:current_syntax
 endif
 
-syn match vimtemplateVariable "%\%(DAY\|YEAR\|MONTH\|DATE\|TIME\|FILE\|FFILE\|EXT\|MAIL\|USER\|HOST\|GUARD\|CLASS\|MACROCLASS\|CAMELCLASS\|HERE\)%" containedin=ALL
+syn match vimtemplateVariable "%\%(DAY\|YEAR\|MONTH\|MONTHSHORT\|MONTHFULL|DATE\|TIME\|FILE\|FFILE\|EXT\|MAIL\|USER\|HOST\|GUARD\|CLASS\|MACROCLASS\|CAMELCLASS\|HERE\)%" containedin=ALL
 
 let b:current_syntax = "vim-template"
 
