@@ -44,8 +44,9 @@ the `g:templates_no_autocmd` variable.
 ===========================================================================
 COMMANDS                                              *template-commands*
 
-The plug-in defines a single command, which expands a template in the
-current buffer. Its syntax is:
+The plug-in defines two commands, both of which expand a template in the
+current buffer. The first expands a matched template at the beginning of
+the current buffer. Its syntax is:
 
 *:Template* <pattern>
 
@@ -57,6 +58,12 @@ expanded into the current buffer. For example:
 will expand the local template `.vim-template:*.c`, or the global template
 `template:*.c`, whichever is found first (see |templates-search-order|
 for more information).
+
+The second command works exactly the same except that it will expand a matched
+template under the cursor instead of at the beginning of the buffer. Its syntax
+is:
+
+*:TemplateHere* <pattern>
 
 
 ===========================================================================
