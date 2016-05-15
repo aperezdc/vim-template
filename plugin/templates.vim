@@ -215,6 +215,7 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 			call <SID>Debug("Could not execute find command")
 			unlet l:glob_results
 		endif
+	endif
 	if !exists("l:glob_results")
 		call <SID>Debug("Using fallback glob")
 		let l:glob_results = glob(a:path . a:template_prefix . "*")
