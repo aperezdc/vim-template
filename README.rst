@@ -14,7 +14,7 @@ Installation
 The easiest way to install the plugin is to install it as a bundle.
 For example, using Pathogen__:
 
-1. Get and install `pathogen.vim <_Pathogen>`__. You can skip this step
+1. Get and install `pathogen.vim <https://github.com/tpope/vim-pathogen>`_. You can skip this step
    if you already have it installed.
 
 2. ``cd ~/.vim/bundle``
