@@ -176,7 +176,7 @@ function <SID>TemplateBaseNameTest(template, prefix, filename)
 	let l:tregex = <SID>TemplateToRegex(a:template, a:prefix)
 
 	" Ensure that we got a valid regex
-	if l:tregex == ""
+	if empty(l:tregex)
 		return 0
 	endif
 
@@ -238,7 +238,7 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 		endif
 	endfor
 
-	if l:picked_template != ""
+	if !empty(l:picked_template)
 		call <SID>Debug('Picked template: ' . l:picked_template)
 	else
 		call <SID>Debug('No template found')
@@ -267,7 +267,7 @@ function <SID>TSearch(path, template_prefix, file_name, height)
 
 		" pick a template from the current path
 		let l:picked_template = <SID>TDirectorySearch(a:path, a:template_prefix, a:file_name)
-		if l:picked_template != ""
+		if !empty(l:picked_template)
 			return l:picked_template
 		else
 			let l:pathUp = <SID>DirName(a:path)
@@ -292,7 +292,7 @@ endfunction
 "
 function <SID>TFind(path, name, up)
 	let l:tmpl = <SID>TSearch(a:path, g:templates_name_prefix, a:name, a:up)
-	if l:tmpl != ''
+	if !empty(l:tmpl)
 		return l:tmpl
 	endif
 
@@ -300,7 +300,7 @@ function <SID>TFind(path, name, up)
 		let l:directory = <SID>NormalizePath(expand(l:directory) . '/')
 		if isdirectory(l:directory)
 			let l:tmpl = <SID>TSearch(l:directory, g:templates_global_name_prefix, a:name, 1)
-			if l:tmpl != ''
+			if !empty(l:tmpl)
 				return l:tmpl
 			endif
 		endif
@@ -449,9 +449,9 @@ endfunction
 
 " Load the given file as a template
 function <SID>TLoadTemplate(template, position)
-	if a:template != ""
+	if !empty(a:template)
 		let l:deleteLastLine = 0
-		if line('$') == 1 && getline(1) == ''
+		if line('$') == 1 && empty(getline(1))
 			let l:deleteLastLine = 1
 		endif
 
