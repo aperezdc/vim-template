@@ -1,82 +1,18 @@
 "
-" Template system for Vim
-"
 " Copyright (C) 2012-2016 Adrian Perez de Castro <aperez@igalia.com>
 " Copyright (C) 2005 Adrian Perez de Castro <the.lightman@gmail.com>
 "
 " Distributed under terms of the MIT license.
 "
 
-if exists('g:templates_plugin_loaded')
+if exists('g:template_autoload_loaded')
 	finish
 endif
-let g:templates_plugin_loaded = 1
+let g:template_autoload_loaded = 1
 
-if !exists('g:templates_name_prefix')
-	let g:templates_name_prefix = '.vim-template:'
-endif
+let s:saved_cpoptions = &cpoptions
+set cpoptions&vim
 
-if !exists('g:templates_global_name_prefix')
-	let g:templates_global_name_prefix = '=template='
-endif
-
-if !exists('g:templates_debug')
-	let g:templates_debug = 0
-endif
-
-if !exists('g:templates_tr_in')
-	let g:templates_tr_in = [ '.', '*', '?' ]
-endif
-
-if !exists('g:templates_tr_out')
-	let g:templates_tr_out = [ '\.', '.*', '\?' ]
-endif
-
-if !exists('g:templates_fuzzy_start')
-	let g:templates_fuzzy_start = 1
-endif
-
-if !exists('g:templates_search_height')
-	" First try to find the deprecated option
-	if exists('g:template_max_depth')
-		echom('g:template_max_depth is deprecated in favor of g:templates_search_height')
-		let g:templates_search_height = g:template_max_depth != 0 ? g:template_max_depth : -1
-	endif
-
-	if(!exists('g:templates_search_height'))
-		let g:templates_search_height = -1
-	endif
-endif
-
-if !exists('g:templates_directory')
-	let g:templates_directory = []
-elseif type(g:templates_directory) == type('')
-	" Convert string value to a list with one element.
-	let s:tmp = g:templates_directory
-	unlet g:templates_directory
-	let g:templates_directory = [ s:tmp ]
-	unlet s:tmp
-endif
-
-if !exists('g:templates_no_builtin_templates')
-	let g:templates_no_builtin_templates = 0
-endif
-
-if !exists('g:templates_user_variables')
-	let g:templates_user_variables = []
-endif
-
-" Put template system autocommands in their own group. {{{1
-if !exists('g:templates_no_autocmd')
-	let g:templates_no_autocmd = 0
-endif
-
-if !g:templates_no_autocmd
-	augroup Templating
-		autocmd!
-		autocmd BufNewFile * call <SID>TLoad()
-	augroup END
-endif
 
 function! s:Debug(mesg) abort
 	if g:templates_debug
@@ -90,7 +26,6 @@ function! s:NormalizePath(path) abort
 	return substitute(a:path, "\\", "/", "g")
 endfunction
 
-" Template searching. {{{1
 " Returns a string containing the path of the parent directory of the given
 " path. Works like dirname(3). It also simplifies the given path.
 function! s:DirName(path) abort
@@ -98,7 +33,7 @@ function! s:DirName(path) abort
 	return substitute(l:tmp, "[^/][^/]*/*$", "", "")
 endfunction
 
-" Default templates directory
+" Directory containing built-in templates
 let s:default_template_dir = s:DirName(s:DirName(expand('<sfile>'))) . 'templates'
 
 " Find the target template in windows
@@ -186,7 +121,7 @@ function! s:TemplateBaseNameTest(template, prefix, filename) abort
 	let l:filename_chopped = fnamemodify(a:filename, ':t')
 
 	" Check for a match
-	let l:regex_result = match(l:filename_chopped,l:tregex)
+	let l:regex_result = match(l:filename_chopped, l:tregex)
 	if l:regex_result != -1
 		" For a match return a score based on the regex length
 		return len(l:tregex)
@@ -270,7 +205,7 @@ function! s:TSearch(path, template_prefix, file_name, height) abort
 			return l:picked_template
 		else
 			let l:pathUp = s:DirName(a:path)
-			if l:pathUp != a:path
+			if l:pathUp !=# a:path
 				let l:new_height = a:height >= 0 ? a:height - 1 : a:height
 				return s:TSearch(l:pathUp, a:template_prefix, a:file_name, l:new_height)
 			endif
@@ -318,8 +253,6 @@ endfunction
 function! s:EscapeRegex(raw) abort
 	return escape(a:raw, '/')
 endfunction
-
-" Template variable expansion. {{{1
 
 " Makes a single [variable] expansion, using [value] as replacement.
 "
@@ -382,8 +315,6 @@ function! s:TExpandVars() abort
 	endfor
 endfunction
 
-" }}}2
-
 " Puts the cursor either at the first line of the file or in the place of
 " the template where the %HERE% string is found, removing %HERE% from the
 " template.
@@ -398,52 +329,12 @@ function! s:TPutCursor() abort
 	endif
 endfunction
 
-" File name utils
-"
 " Ensures that the given file name is safe to be opened and will not be shell
 " expanded
 function! s:NeuterFileName(filename) abort
 	let l:neutered = fnameescape(a:filename)
 	call s:Debug('Neutered ' . a:filename . ' to ' . l:neutered)
 	return l:neutered
-endfunction
-
-
-" Template application. {{{1
-
-" Loads a template for the current buffer, substitutes variables and puts
-" cursor at %HERE%. Used to implement the BufNewFile autocommand.
-"
-function! s:TLoad() abort
-	if !line2byte( line( '$' ) + 1 ) == -1
-		return
-	endif
-
-	let l:file_name = expand('%:p')
-	let l:file_dir = s:DirName(l:file_name)
-	let l:depth = g:templates_search_height
-	let l:tFile = s:TFind(l:file_dir, l:file_name, l:depth)
-	call s:TLoadTemplate(l:tFile, 0)
-endfunction
-
-
-" Like the previous one, TLoad(), but intended to be called with an argument
-" that either is a filename (so the file is loaded as a template) or
-" a template suffix (and the template is searched as usual). Of course this
-" makes variable expansion and cursor positioning.
-"
-function! s:TLoadCmd(template, position) abort
-	if filereadable(a:template)
-		let l:tFile = a:template
-	else
-		let l:height = g:templates_search_height
-		let l:tName = g:templates_global_name_prefix . a:template
-		let l:file_name = expand('%:p')
-		let l:file_dir = s:DirName(l:file_name)
-
-		let l:tFile = s:TFind(l:file_dir, a:template, l:height)
-	endif
-	call s:TLoadTemplate(l:tFile, a:position)
 endfunction
 
 " Load the given file as a template
@@ -473,50 +364,48 @@ function! s:TLoadTemplate(template, position) abort
 	endif
 endfunction
 
-" Commands {{{1
-
-" Just calls the above function, pass either a filename or a template
-" suffix, as explained before =)
+" Loads a template for the current buffer, substitutes variables and puts
+" cursor at %HERE%. Used to implement the BufNewFile autocommand.
 "
-function! ListTemplateSuffixes(A, P, L) abort
+function! template#load() abort
+	if !line2byte(line('$') + 1) == -1
+		return
+	endif
+	let l:file_name = expand('%:p')
+	let l:file_dir = s:DirName(l:file_name)
+	let l:depth = g:templates_search_height
+	let l:tFile = s:TFind(l:file_dir, l:file_name, l:depth)
+	call s:TLoadTemplate(l:tFile, 0)
+endfunction
+
+" Like template#load(), but intended to be called with an argument
+" that either is a filename (so the file is loaded as a template) or
+" a template suffix (and the template is searched as usual). Of course this
+" makes variable expansion and cursor positioning.
+"
+function! template#load_command(template, position) abort
+	if filereadable(a:template)
+		let l:tFile = a:template
+	else
+		let l:height = g:templates_search_height
+		let l:tName = g:templates_global_name_prefix . a:template
+		let l:file_name = expand('%:p')
+		let l:file_dir = s:DirName(l:file_name)
+		let l:tFile = s:TFind(l:file_dir, a:template, l:height)
+	endif
+	call s:TLoadTemplate(l:tFile, a:position)
+endfunction
+
+function! template#suffix_list(A, P, L) abort
   let l:templates = split(globpath(s:default_template_dir, g:templates_global_name_prefix . a:A . '*'), '\n')
   let l:res = []
   for t in templates
     let l:suffix = substitute(t, ".*\\.", "", "")
     call add(l:res, l:suffix)
   endfor
-
   return l:res
 endfunction
-command -nargs=1 -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>", 0)
-command -nargs=1 -complete=customlist,ListTemplateSuffixes TemplateHere call <SID>TLoadCmd("<args>", 1)
 
-" Syntax autocommands {{{1
-"
-" Enable the vim-template syntax for template files
-" Usually we'd put this in the ftdetect folder, but because
-" g:templates_name_prefix doesn't get defined early enough we have to add the
-" template detection from the plugin itself
-execute "au BufNewFile,BufRead " . g:templates_name_prefix . "* "
-			\. "let b:vim_template_subtype = &filetype | "
-			\. "set ft=vim-template"
 
-if !g:templates_no_builtin_templates
-	execute "au BufNewFile,BufRead "
-				\. s:default_template_dir . "/" . g:templates_global_name_prefix . "* "
-				\. "let b:vim_template_subtype = &filetype | "
-				\. "set ft=vim-template"
-endif
-
-for s:directory in g:templates_directory
-	let s:directory = s:NormalizePath(expand(s:directory) . '/')
-	if isdirectory(s:directory)
-		execute "au BufNewFile,BufRead "
-					\. s:directory . "/" . g:templates_global_name_prefix . "* "
-					\. "let b:vim_template_subtype = &filetype | "
-					\. "set ft=vim-template"
-	endif
-	unlet s:directory
-endfor
-
-" vim: fdm=marker
+let &cpoptions = s:saved_cpoptions
+unlet s:saved_cpoptions
