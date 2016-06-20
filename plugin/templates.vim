@@ -78,7 +78,7 @@ if !g:templates_no_autocmd
 	augroup END
 endif
 
-function <SID>Debug(mesg)
+function! s:Debug(mesg) abort
 	if g:templates_debug
 		echom(a:mesg)
 	endif
@@ -86,27 +86,27 @@ endfunction
 
 " normalize the path
 " replace the windows path sep \ with /
-function <SID>NormalizePath(path)
+function! s:NormalizePath(path) abort
 	return substitute(a:path, "\\", "/", "g")
 endfunction
 
 " Template searching. {{{1
 " Returns a string containing the path of the parent directory of the given
 " path. Works like dirname(3). It also simplifies the given path.
-function <SID>DirName(path)
-	let l:tmp = <SID>NormalizePath(a:path)
+function! s:DirName(path) abort
+	let l:tmp = s:NormalizePath(a:path)
 	return substitute(l:tmp, "[^/][^/]*/*$", "", "")
 endfunction
 
 " Default templates directory
-let s:default_template_dir = <SID>DirName(<SID>DirName(expand('<sfile>'))) . 'templates'
+let s:default_template_dir = s:DirName(s:DirName(expand('<sfile>'))) . 'templates'
 
 " Find the target template in windows
 "
 " In windows while we clone the symbol link from github
 " it will turn to normal file, so we use this function
 " to figure out the destination file
-function <SID>TFindLink(path, template)
+function! s:TFindLink(path, template) abort
 	if !filereadable(a:path . a:template)
 		return a:template
 	endif
@@ -117,7 +117,7 @@ function <SID>TFindLink(path, template)
 	endif
 
 	if filereadable(a:path . l:content[0])
-		return <SID>TFindLink(a:path, l:content[0])
+		return s:TFindLink(a:path, l:content[0])
 	else
 		return a:template
 	endif
@@ -131,7 +131,7 @@ endfunction
 "
 " template.test.py -> ^.*test.py$
 "
-function <SID>TemplateToRegex(template, prefix)
+function! s:TemplateToRegex(template, prefix) abort
 	let l:template_base_name = fnamemodify(a:template, ':t')
 	let l:template_glob = strpart(l:template_base_name, len(a:prefix))
 
@@ -172,8 +172,8 @@ endfunction
 " Given a template and filename, return a score on how well the template matches
 " the given filename.  If the template does not match the file name at all,
 " return 0
-function <SID>TemplateBaseNameTest(template, prefix, filename)
-	let l:tregex = <SID>TemplateToRegex(a:template, a:prefix)
+function! s:TemplateBaseNameTest(template, prefix, filename) abort
+	let l:tregex = s:TemplateToRegex(a:template, a:prefix)
 
 	" Ensure that we got a valid regex
 	if empty(l:tregex)
@@ -194,14 +194,13 @@ function <SID>TemplateBaseNameTest(template, prefix, filename)
 		" No match
 		return 0
 	endif
-
 endfunction
 
 " Returns the most specific / highest scored template file found in the given
 " path.  Template files are found by using a glob operation on the current path
 " and the setting of g:templates_name_prefix. If no template is found in the
 " given directory, return an empty string
-function <SID>TDirectorySearch(path, template_prefix, file_name)
+function! s:TDirectorySearch(path, template_prefix, file_name) abort
 	let l:picked_template = ''
 	let l:picked_template_score = 0
 
@@ -209,24 +208,24 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 	" builtin glob as a fallback
 	if executable('find') && !has('win32') && !has('win64')
 		let l:find_cmd = '`find -L ' . shellescape(a:path) . ' -maxdepth 1 -type f -name ' . shellescape(a:template_prefix . '*' ) . '`'
-		call <SID>Debug('Executing ' . l:find_cmd)
+		call s:Debug('Executing ' . l:find_cmd)
 		let l:glob_results = glob(l:find_cmd)
 		if v:shell_error != 0
-			call <SID>Debug('Could not execute find command')
+			call s:Debug('Could not execute find command')
 			unlet l:glob_results
 		endif
 	endif
 	if !exists('l:glob_results')
-		call <SID>Debug('Using fallback glob')
+		call s:Debug('Using fallback glob')
 		let l:glob_results = glob(a:path . a:template_prefix . '*')
 	endif
 	let l:templates = split(l:glob_results, '\n')
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
-			let l:current_score = 
-						\<SID>TemplateBaseNameTest(template, a:template_prefix, a:file_name)
-			call <SID>Debug('template: ' . template . ' got scored: ' . l:current_score)
+			let l:current_score =
+						\ s:TemplateBaseNameTest(template, a:template_prefix, a:file_name)
+			call s:Debug('template: ' . template . ' got scored: ' . l:current_score)
 
 			" Pick that template only if it beats the currently picked template
 			" (here we make the assumption that template name length ~= template
@@ -239,9 +238,9 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 	endfor
 
 	if !empty(l:picked_template)
-		call <SID>Debug('Picked template: ' . l:picked_template)
+		call s:Debug('Picked template: ' . l:picked_template)
 	else
-		call <SID>Debug('No template found')
+		call s:Debug('No template found')
 	endif
 
 	return l:picked_template
@@ -262,18 +261,18 @@ endfunction
 "
 " If no template is found an empty string is returned.
 "
-function <SID>TSearch(path, template_prefix, file_name, height)
+function! s:TSearch(path, template_prefix, file_name, height) abort
 	if (a:height != 0)
 
 		" pick a template from the current path
-		let l:picked_template = <SID>TDirectorySearch(a:path, a:template_prefix, a:file_name)
+		let l:picked_template = s:TDirectorySearch(a:path, a:template_prefix, a:file_name)
 		if !empty(l:picked_template)
 			return l:picked_template
 		else
-			let l:pathUp = <SID>DirName(a:path)
+			let l:pathUp = s:DirName(a:path)
 			if l:pathUp != a:path
 				let l:new_height = a:height >= 0 ? a:height - 1 : a:height
-				return <SID>TSearch(l:pathUp, a:template_prefix, a:file_name, l:new_height)
+				return s:TSearch(l:pathUp, a:template_prefix, a:file_name, l:new_height)
 			endif
 		endif
 	endif
@@ -290,16 +289,16 @@ endfunction
 "   3. Built-in templates from s:default_template_dir.
 " Returns an empty string if no template is found.
 "
-function <SID>TFind(path, name, up)
-	let l:tmpl = <SID>TSearch(a:path, g:templates_name_prefix, a:name, a:up)
+function! s:TFind(path, name, up) abort
+	let l:tmpl = s:TSearch(a:path, g:templates_name_prefix, a:name, a:up)
 	if !empty(l:tmpl)
 		return l:tmpl
 	endif
 
 	for l:directory in g:templates_directory
-		let l:directory = <SID>NormalizePath(expand(l:directory) . '/')
+		let l:directory = s:NormalizePath(expand(l:directory) . '/')
 		if isdirectory(l:directory)
-			let l:tmpl = <SID>TSearch(l:directory, g:templates_global_name_prefix, a:name, 1)
+			let l:tmpl = s:TSearch(l:directory, g:templates_global_name_prefix, a:name, 1)
 			if !empty(l:tmpl)
 				return l:tmpl
 			endif
@@ -310,13 +309,13 @@ function <SID>TFind(path, name, up)
 		return ''
 	endif
 
-	return <SID>TSearch(<SID>NormalizePath(expand(s:default_template_dir) . '/'), g:templates_global_name_prefix, a:name, 1)
+	return s:TSearch(s:NormalizePath(expand(s:default_template_dir) . '/'), g:templates_global_name_prefix, a:name, 1)
 endfunction
 
 " Escapes a string for use in a regex expression where the regex uses / as the
 " delimiter. Must be used with Magic Mode off /V
 "
-function <SID>EscapeRegex(raw)
+function! s:EscapeRegex(raw) abort
 	return escape(a:raw, '/')
 endfunction
 
@@ -324,13 +323,13 @@ endfunction
 
 " Makes a single [variable] expansion, using [value] as replacement.
 "
-function <SID>TExpand(variable, value)
-	silent! execute "%s/\\V%" . <SID>EscapeRegex(a:variable) . "%/" .  <SID>EscapeRegex(a:value) . "/g"
+function! s:TExpand(variable, value) abort
+	silent! execute "%s/\\V%" . s:EscapeRegex(a:variable) . "%/" .  s:EscapeRegex(a:value) . "/g"
 endfunction
 
 " Performs variable expansion in a template once it was loaded {{{2
 "
-function <SID>TExpandVars()
+function! s:TExpandVars() abort
 	" Date/time values
 	let l:day        = strftime("%d")
 	let l:year       = strftime("%Y")
@@ -355,31 +354,31 @@ function <SID>TExpandVars()
 	let l:camelclass = substitute(l:class, "_", "", "g")
 
 	" Finally, perform expansions
-	call <SID>TExpand("DAY",   l:day)
-	call <SID>TExpand("YEAR",  l:year)
-	call <SID>TExpand("DATE",  l:date)
-	call <SID>TExpand("TIME",  l:time)
-	call <SID>TExpand("USER",  l:user)
-	call <SID>TExpand("FDATE", l:fdate)
-	call <SID>TExpand("MONTH", l:month)
-	call <SID>TExpand("MONTHSHORT", l:monshort)
-	call <SID>TExpand("MONTHFULL",  l:monfull)
-	call <SID>TExpand("FILE",  l:filen)
-	call <SID>TExpand("FFILE", l:filec)
-	call <SID>TExpand("FDIR",  l:fdir)
-	call <SID>TExpand("EXT",   l:filex)
-	call <SID>TExpand("MAIL",  l:email)
-	call <SID>TExpand("HOST",  l:hostn)
-	call <SID>TExpand("GUARD", l:guard)
-	call <SID>TExpand("CLASS", l:class)
-	call <SID>TExpand("MACROCLASS", l:macroclass)
-	call <SID>TExpand("CAMELCLASS", l:camelclass)
-	call <SID>TExpand("LICENSE", exists("g:license") ? g:license : "MIT")
+	call s:TExpand("DAY",   l:day)
+	call s:TExpand("YEAR",  l:year)
+	call s:TExpand("DATE",  l:date)
+	call s:TExpand("TIME",  l:time)
+	call s:TExpand("USER",  l:user)
+	call s:TExpand("FDATE", l:fdate)
+	call s:TExpand("MONTH", l:month)
+	call s:TExpand("MONTHSHORT", l:monshort)
+	call s:TExpand("MONTHFULL",  l:monfull)
+	call s:TExpand("FILE",  l:filen)
+	call s:TExpand("FFILE", l:filec)
+	call s:TExpand("FDIR",  l:fdir)
+	call s:TExpand("EXT",   l:filex)
+	call s:TExpand("MAIL",  l:email)
+	call s:TExpand("HOST",  l:hostn)
+	call s:TExpand("GUARD", l:guard)
+	call s:TExpand("CLASS", l:class)
+	call s:TExpand("MACROCLASS", l:macroclass)
+	call s:TExpand("CAMELCLASS", l:camelclass)
+	call s:TExpand("LICENSE", exists("g:license") ? g:license : "MIT")
 
 	" Perform expansions for user-defined variables
 	for [l:varname, l:funcname] in g:templates_user_variables
 		let l:value = function(funcname)()
-		call <SID>TExpand(l:varname, l:value)
+		call s:TExpand(l:varname, l:value)
 	endfor
 endfunction
 
@@ -389,7 +388,7 @@ endfunction
 " the template where the %HERE% string is found, removing %HERE% from the
 " template.
 "
-function <SID>TPutCursor()
+function! s:TPutCursor() abort
 	0  " Go to first line before searching
 	if search("%HERE%", "W")
 		let l:column = col(".")
@@ -403,9 +402,9 @@ endfunction
 "
 " Ensures that the given file name is safe to be opened and will not be shell
 " expanded
-function <SID>NeuterFileName(filename)
+function! s:NeuterFileName(filename) abort
 	let l:neutered = fnameescape(a:filename)
-	call <SID>Debug('Neutered ' . a:filename . ' to ' . l:neutered)
+	call s:Debug('Neutered ' . a:filename . ' to ' . l:neutered)
 	return l:neutered
 endfunction
 
@@ -415,16 +414,16 @@ endfunction
 " Loads a template for the current buffer, substitutes variables and puts
 " cursor at %HERE%. Used to implement the BufNewFile autocommand.
 "
-function <SID>TLoad()
+function! s:TLoad() abort
 	if !line2byte( line( '$' ) + 1 ) == -1
 		return
 	endif
 
 	let l:file_name = expand('%:p')
-	let l:file_dir = <SID>DirName(l:file_name)
+	let l:file_dir = s:DirName(l:file_name)
 	let l:depth = g:templates_search_height
-	let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
-	call <SID>TLoadTemplate(l:tFile, 0)
+	let l:tFile = s:TFind(l:file_dir, l:file_name, l:depth)
+	call s:TLoadTemplate(l:tFile, 0)
 endfunction
 
 
@@ -433,22 +432,22 @@ endfunction
 " a template suffix (and the template is searched as usual). Of course this
 " makes variable expansion and cursor positioning.
 "
-function <SID>TLoadCmd(template, position)
+function! s:TLoadCmd(template, position) abort
 	if filereadable(a:template)
 		let l:tFile = a:template
 	else
 		let l:height = g:templates_search_height
 		let l:tName = g:templates_global_name_prefix . a:template
 		let l:file_name = expand('%:p')
-		let l:file_dir = <SID>DirName(l:file_name)
+		let l:file_dir = s:DirName(l:file_name)
 
-		let l:tFile = <SID>TFind(l:file_dir, a:template, l:height)
+		let l:tFile = s:TFind(l:file_dir, a:template, l:height)
 	endif
-	call <SID>TLoadTemplate(l:tFile, a:position)
+	call s:TLoadTemplate(l:tFile, a:position)
 endfunction
 
 " Load the given file as a template
-function <SID>TLoadTemplate(template, position)
+function! s:TLoadTemplate(template, position) abort
 	if !empty(a:template)
 		let l:deleteLastLine = 0
 		if line('$') == 1 && empty(getline(1))
@@ -456,20 +455,20 @@ function <SID>TLoadTemplate(template, position)
 		endif
 
 		" Read template file and expand variables in it.
-		let l:safeFileName = <SID>NeuterFileName(a:template)
+		let l:safeFileName = s:NeuterFileName(a:template)
 		if a:position == 0
 			execute 'keepalt 0r ' . l:safeFileName
 		else
 			execute 'keepalt r ' . l:safeFileName
 		endif
-		call <SID>TExpandVars()
+		call s:TExpandVars()
 
 		if l:deleteLastLine == 1
 			" Loading a template into an empty buffer leaves an extra blank line at the bottom, delete it
 			execute line('$') . 'd _'
 		endif
 
-		call <SID>TPutCursor()
+		call s:TPutCursor()
 		setlocal nomodified
 	endif
 endfunction
@@ -479,7 +478,7 @@ endfunction
 " Just calls the above function, pass either a filename or a template
 " suffix, as explained before =)
 "
-fun ListTemplateSuffixes(A,P,L)
+function! ListTemplateSuffixes(A, P, L) abort
   let l:templates = split(globpath(s:default_template_dir, g:templates_global_name_prefix . a:A . '*'), '\n')
   let l:res = []
   for t in templates
@@ -488,7 +487,7 @@ fun ListTemplateSuffixes(A,P,L)
   endfor
 
   return l:res
-endfun
+endfunction
 command -nargs=1 -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>", 0)
 command -nargs=1 -complete=customlist,ListTemplateSuffixes TemplateHere call <SID>TLoadCmd("<args>", 1)
 
@@ -510,7 +509,7 @@ if !g:templates_no_builtin_templates
 endif
 
 for s:directory in g:templates_directory
-	let s:directory = <SID>NormalizePath(expand(s:directory) . '/')
+	let s:directory = s:NormalizePath(expand(s:directory) . '/')
 	if isdirectory(s:directory)
 		execute "au BufNewFile,BufRead "
 					\. s:directory . "/" . g:templates_global_name_prefix . "* "
