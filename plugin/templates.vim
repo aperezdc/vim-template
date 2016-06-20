@@ -7,17 +7,17 @@
 " Distributed under terms of the MIT license.
 "
 
-if exists("g:templates_plugin_loaded")
+if exists('g:templates_plugin_loaded')
 	finish
 endif
 let g:templates_plugin_loaded = 1
 
 if !exists('g:templates_name_prefix')
-	let g:templates_name_prefix = ".vim-template:"
+	let g:templates_name_prefix = '.vim-template:'
 endif
 
 if !exists('g:templates_global_name_prefix')
-	let g:templates_global_name_prefix = "=template="
+	let g:templates_global_name_prefix = '=template='
 endif
 
 if !exists('g:templates_debug')
@@ -99,7 +99,7 @@ function <SID>DirName(path)
 endfunction
 
 " Default templates directory
-let s:default_template_dir = <SID>DirName(<SID>DirName(expand("<sfile>"))) . "templates"
+let s:default_template_dir = <SID>DirName(<SID>DirName(expand('<sfile>'))) . 'templates'
 
 " Find the target template in windows
 "
@@ -111,7 +111,7 @@ function <SID>TFindLink(path, template)
 		return a:template
 	endif
 
-	let l:content = readfile(a:path . a:template, "b")
+	let l:content = readfile(a:path . a:template, 'b')
 	if len(l:content) != 1
 		return a:template
 	endif
@@ -132,12 +132,12 @@ endfunction
 " template.test.py -> ^.*test.py$
 "
 function <SID>TemplateToRegex(template, prefix)
-	let l:template_base_name = fnamemodify(a:template,":t")
+	let l:template_base_name = fnamemodify(a:template, ':t')
 	let l:template_glob = strpart(l:template_base_name, len(a:prefix))
 
 	" Translate the template's glob into a normal regular expression
 	let l:in_escape_mode = 0
-	let l:template_regex = ""
+	let l:template_regex = ''
 	for l:c in split(l:template_glob, '\zs')
 		if l:in_escape_mode == 1
 			if l:c == '\'
@@ -183,7 +183,7 @@ function <SID>TemplateBaseNameTest(template, prefix, filename)
 	" For now only use the base of the filename.. this may change later
 	" *Note* we also have to be careful because a:filename may also be the passed
 	" in text from TLoadCmd...
-	let l:filename_chopped = fnamemodify(a:filename,":t")
+	let l:filename_chopped = fnamemodify(a:filename, ':t')
 
 	" Check for a match
 	let l:regex_result = match(l:filename_chopped,l:tregex)
@@ -202,31 +202,31 @@ endfunction
 " and the setting of g:templates_name_prefix. If no template is found in the
 " given directory, return an empty string
 function <SID>TDirectorySearch(path, template_prefix, file_name)
-	let l:picked_template = ""
+	let l:picked_template = ''
 	let l:picked_template_score = 0
 
 	" Use find if possible as it will also get hidden files on nix systems. Use
 	" builtin glob as a fallback
-	if executable("find") && !has("win32") && !has("win64")
+	if executable('find') && !has('win32') && !has('win64')
 		let l:find_cmd = '`find -L ' . shellescape(a:path) . ' -maxdepth 1 -type f -name ' . shellescape(a:template_prefix . '*' ) . '`'
-		call <SID>Debug("Executing " . l:find_cmd)
+		call <SID>Debug('Executing ' . l:find_cmd)
 		let l:glob_results = glob(l:find_cmd)
 		if v:shell_error != 0
-			call <SID>Debug("Could not execute find command")
+			call <SID>Debug('Could not execute find command')
 			unlet l:glob_results
 		endif
 	endif
-	if !exists("l:glob_results")
-		call <SID>Debug("Using fallback glob")
-		let l:glob_results = glob(a:path . a:template_prefix . "*")
+	if !exists('l:glob_results')
+		call <SID>Debug('Using fallback glob')
+		let l:glob_results = glob(a:path . a:template_prefix . '*')
 	endif
-	let l:templates = split(l:glob_results, "\n")
+	let l:templates = split(l:glob_results, '\n')
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
 			let l:current_score = 
 						\<SID>TemplateBaseNameTest(template, a:template_prefix, a:file_name)
-			call <SID>Debug("template: " . template . " got scored: " . l:current_score)
+			call <SID>Debug('template: ' . template . ' got scored: ' . l:current_score)
 
 			" Pick that template only if it beats the currently picked template
 			" (here we make the assumption that template name length ~= template
@@ -239,9 +239,9 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 	endfor
 
 	if l:picked_template != ""
-		call <SID>Debug("Picked template: " . l:picked_template)
+		call <SID>Debug('Picked template: ' . l:picked_template)
 	else
-		call <SID>Debug("No template found")
+		call <SID>Debug('No template found')
 	endif
 
 	return l:picked_template
@@ -279,7 +279,7 @@ function <SID>TSearch(path, template_prefix, file_name, height)
 	endif
 
 	" Ooops, either we cannot go up in the path or [height] reached 0
-	return ""
+	return ''
 endfunction
 
 
@@ -405,7 +405,7 @@ endfunction
 " expanded
 function <SID>NeuterFileName(filename)
 	let l:neutered = fnameescape(a:filename)
-	call <SID>Debug("Neutered " . a:filename . " to " . l:neutered)
+	call <SID>Debug('Neutered ' . a:filename . ' to ' . l:neutered)
 	return l:neutered
 endfunction
 
@@ -420,7 +420,7 @@ function <SID>TLoad()
 		return
 	endif
 
-	let l:file_name = expand("%:p")
+	let l:file_name = expand('%:p')
 	let l:file_dir = <SID>DirName(l:file_name)
 	let l:depth = g:templates_search_height
 	let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
@@ -439,7 +439,7 @@ function <SID>TLoadCmd(template, position)
 	else
 		let l:height = g:templates_search_height
 		let l:tName = g:templates_global_name_prefix . a:template
-		let l:file_name = expand("%:p")
+		let l:file_name = expand('%:p')
 		let l:file_dir = <SID>DirName(l:file_name)
 
 		let l:tFile = <SID>TFind(l:file_dir, a:template, l:height)
@@ -458,15 +458,15 @@ function <SID>TLoadTemplate(template, position)
 		" Read template file and expand variables in it.
 		let l:safeFileName = <SID>NeuterFileName(a:template)
 		if a:position == 0
-			execute "keepalt 0r " . l:safeFileName
+			execute 'keepalt 0r ' . l:safeFileName
 		else
-			execute "keepalt r " . l:safeFileName
+			execute 'keepalt r ' . l:safeFileName
 		endif
 		call <SID>TExpandVars()
 
 		if l:deleteLastLine == 1
 			" Loading a template into an empty buffer leaves an extra blank line at the bottom, delete it
-			execute line('$') . "d _"
+			execute line('$') . 'd _'
 		endif
 
 		call <SID>TPutCursor()
@@ -480,7 +480,7 @@ endfunction
 " suffix, as explained before =)
 "
 fun ListTemplateSuffixes(A,P,L)
-  let l:templates = split(globpath(s:default_template_dir, g:templates_global_name_prefix . a:A . "*"), "\n")
+  let l:templates = split(globpath(s:default_template_dir, g:templates_global_name_prefix . a:A . '*'), '\n')
   let l:res = []
   for t in templates
     let l:suffix = substitute(t, ".*\\.", "", "")
