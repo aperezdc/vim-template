@@ -1,7 +1,7 @@
 "
 " Template system for Vim
 "
-" Copyright (C) 2012 Adrian Perez de Castro <aperez@igalia.com>
+" Copyright (C) 2012-2016 Adrian Perez de Castro <aperez@igalia.com>
 " Copyright (C) 2005 Adrian Perez de Castro <the.lightman@gmail.com>
 "
 " Distributed under terms of the MIT license.
