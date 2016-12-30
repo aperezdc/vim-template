@@ -29,6 +29,14 @@ bundle managers are expected to work as well.
 __ https://github.com/gmarik/vundle
 
 
+.. important:: If you use Fish__ as your shell, you *will* need to add
+   ``set shell=/bin/sh`` to your ``~/.vimrc`` — the plugin relies on the
+   setting pointing to a Bourne-compatible__ shell.
+
+__ http://fishshell.com/
+__ https://en.wikipedia.org/wiki/Bourne_shell
+
+
 Updating
 ========
 
