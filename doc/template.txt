@@ -9,6 +9,7 @@ Configuration                 |template-configuration|
 Search order                  |template-search-order|
 Variables                     |template-variables|
 User Variables                |template-user-variables|
+Troubleshooting               |template-troubleshooting|
 
 
 ===========================================================================
@@ -251,6 +252,38 @@ the following can be added to the user |vimrc|:
 >
 This way, each occurrence of `%FULLPATH%` in a template will be replaced
 with the absolute path of the current file.
+
+===========================================================================
+TROUBLESHOOTING                                 *template-troubleshooting*
+
+Q: Why are no templates found by the plugin?
+
+A: Make sure you are using a Bourne-compatible shell. Vim will pick by
+   default the value of the `$SHELL` environment variable. If you are using
+   a non-Bourn shell (like Fish, for example), you can tell Vim to use a
+   different one by using the 'shell' option. This should not be needed
+   in non-Unix systems, so you may want to add the following snippet to
+   your `vimrc`:
+>
+	 if has('unix')
+	    set shell=/bin/sh
+	 endif
+<
+---
+
+Q: How can I debug how the plugin looks up templates?
+
+A: Add `set g:templates_debug = 1` in your `vimrc`.
+
+---
+
+Q: My question is not answered here. How can I contact the developers?
+
+A: Please file an issue at https://github.com/aperezdc/vim-template/issues
+   We have a `question` category for the issues which you can check to see
+   whether others have had the same question before. Eventually, the most
+   common questions may end up in the |template-troubleshooting| section of
+   the documentation (this one you are reading).
 
 
 vim:tw=78:sw=8:ts=8:ft=help:norl:noet
