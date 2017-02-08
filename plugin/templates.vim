@@ -457,7 +457,7 @@ function <SID>TLoadTemplate(template, position)
 
 		" Read template file and expand variables in it.
 		let l:safeFileName = <SID>NeuterFileName(a:template)
-		if a:position == 0
+		if a:position == 0 || l:deleteLastLine == 1
 			execute "keepalt 0r " . l:safeFileName
 		else
 			execute "keepalt r " . l:safeFileName
