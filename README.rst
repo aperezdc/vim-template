@@ -37,6 +37,18 @@ __ http://fishshell.com/
 __ https://en.wikipedia.org/wiki/Bourne_shell
 
 
+Documentation
+=============
+
+The documentation can be browsed directly in Vim::
+
+    :help template.txt
+
+Alternatively, you can also `read it in your browser`__.
+
+__ https://github.com/aperezdc/vim-template/blob/master/doc/template.txt
+
+
 Updating
 ========
 
