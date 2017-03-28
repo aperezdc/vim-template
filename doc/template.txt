@@ -57,7 +57,7 @@ expanded into the current buffer. For example:
 	:Template *.c
 >
 will expand the local template `.vim-template:*.c`, or the global template
-`template:*.c`, whichever is found first (see |templates-search-order|
+`template:*.c`, whichever is found first (see |template-search-order|
 for more information).
 
 The second command works exactly the same except that it will expand a matched
