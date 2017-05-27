@@ -74,7 +74,7 @@ endif
 if !g:templates_no_autocmd
 	augroup Templating
 		autocmd!
-		autocmd BufNewFile * call <SID>TLoad()
+		autocmd BufNewFile,BufReadPost * call <SID>TLoad()
 	augroup END
 endif
 
