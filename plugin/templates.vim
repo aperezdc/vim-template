@@ -66,6 +66,9 @@ if !exists('g:templates_user_variables')
 	let g:templates_user_variables = []
 endif
 
+" command to init template for existing file - e.g. :TemplateInit 
+command -nargs=0 TemplateInit :call <SID>TLoad()
+
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
 	let g:templates_no_autocmd = 0
