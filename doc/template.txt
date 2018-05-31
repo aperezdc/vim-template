@@ -108,9 +108,9 @@ plug-in:
 		useful on a Windows box where `*` is not allowed in file
 		names. The default configuration converts underscores (`_`)
 		into regular expression wildcards (`.*`).
-		
+
 		(Default: `['.','*','?']`, and `['\.','.*','\?']`).
-		
+
 `g:templates_no_builtin_templates`
 		If non-zero, disables usage of the built-in templates. See
 		|template-search-order| for more details. (Default: `0`).
@@ -284,6 +284,17 @@ A: Please file an issue at https://github.com/aperezdc/vim-template/issues
    whether others have had the same question before. Eventually, the most
    common questions may end up in the |template-troubleshooting| section of
    the documentation (this one you are reading).
+
+---
+
+Q: Why is only variable replaced per line?
+
+A: This plugin uses the vim's substitute with the "g" option, which means
+   all occurrences shall be removed.
+   If not, ensure that gdefault and edcompatible is off as
+   documented at http://vim.wikia.com/wiki/Substitute
+   The option gdefault causes the inversion of the "g" option which is
+   then in conflict with the intended behaviour of this plugin.
 
 
 vim:tw=78:sw=8:ts=8:ft=help:norl:noet
