@@ -66,8 +66,6 @@ if !exists('g:templates_user_variables')
 	let g:templates_user_variables = []
 endif
 
-" command to init template for existing file - e.g. :TemplateInit 
-command -nargs=0 TemplateInit :call <SID>TLoad()
 
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
@@ -436,18 +434,24 @@ endfunction
 " a template suffix (and the template is searched as usual). Of course this
 " makes variable expansion and cursor positioning.
 "
-function <SID>TLoadCmd(template, position)
-	if filereadable(a:template)
-		let l:tFile = a:template
-	else
-		let l:height = g:templates_search_height
-		let l:tName = g:templates_global_name_prefix . a:template
-		let l:file_name = expand("%:p")
-		let l:file_dir = <SID>DirName(l:file_name)
-
-		let l:tFile = <SID>TFind(l:file_dir, a:template, l:height)
-	endif
-	call <SID>TLoadTemplate(l:tFile, a:position)
+function <SID>TLoadCmd(...)
+    if a:1 == ''
+        call <SID>TLoad()
+        return
+    else
+        let l:template = a:1
+        let l:position = a:2
+    endif
+    if filereadable(a:1)
+	    let l:tFile = l:template
+    else
+	    let l:height = g:templates_search_height
+		let l:tName = g:templates_global_name_prefix . l:template
+    	let l:file_name = expand("%:p")
+	    let l:file_dir = <SID>DirName(l:file_name)
+	    let l:tFile = <SID>TFind(l:file_dir, l:template, l:height)
+    endif
+    call <SID>TLoadTemplate(l:tFile, l:position)
 endfunction
 
 " Load the given file as a template
@@ -492,7 +496,8 @@ fun ListTemplateSuffixes(A,P,L)
 
   return l:res
 endfun
-command -nargs=1 -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>", 0)
+
+command -nargs=* -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>", 0)
 command -nargs=1 -complete=customlist,ListTemplateSuffixes TemplateHere call <SID>TLoadCmd("<args>", 1)
 
 " Syntax autocommands {{{1
