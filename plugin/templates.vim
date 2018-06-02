@@ -225,7 +225,7 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
-			let l:current_score = 
+			let l:current_score =
 						\<SID>TemplateBaseNameTest(template, a:template_prefix, a:file_name)
 			call <SID>Debug("template: " . template . " got scored: " . l:current_score)
 

@@ -32,19 +32,18 @@ determine which template is used:
 	$ vim foo.c
 <
 Templates can be manually expanded in the current buffer using the
-|:Template| command in two ways. 
+|:Template| command in two ways.
 
-For example, the following will load and expand the
-template for a file matching the file extension:
+For example, the following will load and expand the template for a file
+matching the file extension:
 >
 	:Template
->
-And the following will load and expand 
-the template for a file matching the pattern `*.c`:	
+<
+And the following will load and expand the template for a file matching
+the pattern `*.c`:
 >
 	:Template *.c
->
-
+<
 Note that automatic insertion of templates can be disabling by setting
 the `g:templates_no_autocmd` variable.
 
