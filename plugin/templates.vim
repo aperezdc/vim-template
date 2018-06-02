@@ -75,7 +75,7 @@ endif
 if !g:templates_no_autocmd
 	augroup Templating
 		autocmd!
-		autocmd BufNewFile * call <SID>TLoad()
+		autocmd BufNewFile * call <SID>TLoad(2, '')
 	augroup END
 endif
 
@@ -183,7 +183,7 @@ function <SID>TemplateBaseNameTest(template, prefix, filename)
 
 	" For now only use the base of the filename.. this may change later
 	" *Note* we also have to be careful because a:filename may also be the passed
-	" in text from TLoadCmd...
+	" in text from TLoad...
 	let l:filename_chopped = fnamemodify(a:filename,":t")
 
 	" Check for a match
@@ -413,45 +413,41 @@ endfunction
 
 " Template application. {{{1
 
-" Loads a template for the current buffer, substitutes variables and puts
-" cursor at %HERE%. Used to implement the BufNewFile autocommand.
+" Expand a template in the current buffer, substituting variables and
+" putting the cursor at %HERE%.
 "
-function <SID>TLoad()
-	if !line2byte( line( '$' ) + 1 ) == -1
-		return
+" The a:position parameter determines the mode of operation:
+"
+"    -1   The template is to be expanded in a new file/buffer.
+"     0   The template is to be expanded at the top of the buffer.
+"     1   The template is to be expanded at the cursor position.
+"
+" An empty a:template will use the file name for the current buffer in
+" order to determine which template to use. A non-empty string can be
+" either be a filename (which gets loaded as a template) or a template
+" suffix (i.e. '.c') which will use the template search algorithm.
+"
+function <SID>TLoad(position, template)
+	" A new file is being created.
+	if a:position == -1
+		if !line2byte(line('$') + 1) == -1
+			return
+		endif
+		let a:position = 0
 	endif
 
-	let l:file_name = expand("%:p")
-	let l:file_dir = <SID>DirName(l:file_name)
-	let l:depth = g:templates_search_height
-	let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
-	call <SID>TLoadTemplate(l:tFile, 0)
-endfunction
-
-
-" Like the previous one, TLoad(), but intended to be called with an argument
-" that either is a filename (so the file is loaded as a template) or
-" a template suffix (and the template is searched as usual). Of course this
-" makes variable expansion and cursor positioning.
-"
-function <SID>TLoadCmd(...)
-    if a:1 == ''
-        call <SID>TLoad()
-        return
-    else
-        let l:template = a:1
-        let l:position = a:2
-    endif
-    if filereadable(a:1)
-	    let l:tFile = l:template
+	if a:template !=# '' && filereadable(a:template)
+	    let l:tFile = a:template
     else
 	    let l:height = g:templates_search_height
-		let l:tName = g:templates_global_name_prefix . l:template
-    	let l:file_name = expand("%:p")
+		let l:file_name = expand('%:p')
 	    let l:file_dir = <SID>DirName(l:file_name)
-	    let l:tFile = <SID>TFind(l:file_dir, l:template, l:height)
+		if a:template !=# ''
+			let l:file_name = a:template
+		endif
+	    let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:height)
     endif
-    call <SID>TLoadTemplate(l:tFile, l:position)
+    call <SID>TLoadTemplate(l:tFile, a:position)
 endfunction
 
 " Load the given file as a template
@@ -497,8 +493,8 @@ fun ListTemplateSuffixes(A,P,L)
   return l:res
 endfun
 
-command -nargs=* -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>", 0)
-command -nargs=* -complete=customlist,ListTemplateSuffixes TemplateHere call <SID>TLoadCmd("<args>", 1)
+command -nargs=? -complete=customlist,ListTemplateSuffixes Template call <SID>TLoad(0, "<args>")
+command -nargs=? -complete=customlist,ListTemplateSuffixes TemplateHere call <SID>TLoad(1, "<args>")
 
 " Syntax autocommands {{{1
 "
