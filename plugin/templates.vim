@@ -498,7 +498,7 @@ fun ListTemplateSuffixes(A,P,L)
 endfun
 
 command -nargs=* -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>", 0)
-command -nargs=1 -complete=customlist,ListTemplateSuffixes TemplateHere call <SID>TLoadCmd("<args>", 1)
+command -nargs=* -complete=customlist,ListTemplateSuffixes TemplateHere call <SID>TLoadCmd("<args>", 1)
 
 " Syntax autocommands {{{1
 "
