@@ -222,8 +222,10 @@ templates:
 		the `g:username` variable.
 
 `%LICENSE%`
-		Expands to the string `MIT` by default. May be overriden
-		by definining the `g:license` variable.
+		Tries to determine the project's license it the following order:
+		1. Using `licensee` if installed
+		2. Using the `g:license` variable.
+		3. If all else fails: Default to `MIT`.
 
 `%HOST%`
 		Current host name.
