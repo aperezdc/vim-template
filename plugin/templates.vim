@@ -355,6 +355,20 @@ function <SID>TExpandVars()
 	let l:macroclass = toupper(l:class)
 	let l:camelclass = substitute(l:class, "_", "", "g")
 
+	" Define license variable
+	if executable('licensee')
+		" Returns 'None' if the project does not have a license.
+		let l:license = matchstr(system("licensee detect " . expand("%:p")), \
+		'^License:\s*\zs\S\+\ze\%x00')
+    endif
+	if !exists("l:license") || l:license == "None"
+		if exists("g:license")
+			let l:license = g:license
+		else
+			let l:license = "MIT"
+		endif
+	endif
+
 	" Finally, perform expansions
 	call <SID>TExpand("DAY",   l:day)
 	call <SID>TExpand("YEAR",  l:year)
@@ -375,7 +389,7 @@ function <SID>TExpandVars()
 	call <SID>TExpand("CLASS", l:class)
 	call <SID>TExpand("MACROCLASS", l:macroclass)
 	call <SID>TExpand("CAMELCLASS", l:camelclass)
-	call <SID>TExpand("LICENSE", exists("g:license") ? g:license : "MIT")
+	call <SID>TExpand("LICENSE", l:license)
 
 	" Perform expansions for user-defined variables
 	for [l:varname, l:funcname] in g:templates_user_variables
