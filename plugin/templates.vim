@@ -358,7 +358,7 @@ function <SID>TExpandVars()
 	" Define license variable
 	if executable('licensee')
 		" Returns 'None' if the project does not have a license.
-		let l:license = matchstr(system("licensee detect " . expand("%:p")), '^License:\s*\zs\S\+\ze\%x00')
+		let l:license = matchstr(system("licensee detect"), '^License:\s*\zs\S\+\ze\%x00')
     endif
 	if !exists("l:license") || l:license == "None"
 		if exists("g:license")
