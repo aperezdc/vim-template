@@ -136,6 +136,10 @@ plug-in:
 		|template-user-variables| for more details.
 		(Default: `[]`).
 
+`g:templates_use_licensee`
+		Use licensee to detect project license when expanding
+		`%LICENSE%`. (Default: `1`)
+
 `g:templates_debug`
 		If non-zero, output debugging information. (Default: `0`).
 
@@ -223,7 +227,8 @@ templates:
 
 `%LICENSE%`
 		Tries to determine the project's license it the following order:
-		1. Using `licensee` if installed
+		1. Using `licensee` if installed. This can be disabled by
+		setting the `g:templates_use_licensee` variable to `0`.
 		2. Using the `g:license` variable.
 		3. If all else fails: Default to `MIT`.
 

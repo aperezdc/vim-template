@@ -66,6 +66,9 @@ if !exists('g:templates_user_variables')
 	let g:templates_user_variables = []
 endif
 
+if !exists('g:templates_use_licensee')
+	let g:templates_use_licensee = 0
+endif
 
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
@@ -356,9 +359,9 @@ function <SID>TExpandVars()
 	let l:camelclass = substitute(l:class, "_", "", "g")
 
 	" Define license variable
-	if executable('licensee')
+	if executable('licensee') && g:templates_use_licensee
 		" Returns 'None' if the project does not have a license.
-		let l:license = matchstr(system("licensee detect"), '^License:\s*\zs\S\+\ze\%x00')
+		let l:license = matchstr(system("licensee detect " . expand("%:p:h")), '^License:\s*\zs\S\+\ze\%x00')
 	endif
 	if !exists("l:license") || l:license == "None"
 		if exists("g:license")
