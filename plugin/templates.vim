@@ -70,6 +70,10 @@ if !exists('g:templates_use_licensee')
 	let g:templates_use_licensee = 1
 endif
 
+if !exists('g:templates_detect_git')
+	let g:templates_detect_git = 0
+endif
+
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
 	let g:templates_no_autocmd = 0
@@ -360,10 +364,17 @@ function <SID>TExpandVars()
 
 	" Define license variable
 	if executable('licensee') && g:templates_use_licensee
+        let l:projectpath = shellescape(expand("%:p:h"))
+        if executable('git') && g:templates_detect_git
+            silent "!git rev-parse --is-inside-work-tree > /dev/null"
+            if v:shell_error == 0
+                let l:projectpath = system("git rev-parse --show-toplevel")
+            endif
+        endif
 		" Returns 'None' if the project does not have a license.
-		let l:license = matchstr(system("licensee detect " . shellescape(expand("%:p:h"))), '^License:\s*\zs\S\+\ze\%x00')
+		let l:license = matchstr(system("licensee detect " . l:projectpath), '^License:\s*\zs\S\+\ze\%x00')
 	endif
-	if !exists("l:license") || l:license == "None"
+	if !exists("l:license") || l:license == "None" || l:license == ""
 		if exists("g:license")
 			let l:license = g:license
 		else
