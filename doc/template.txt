@@ -156,6 +156,13 @@ plug-in:
 		only the given directory is searched. If greater
 		than one, n parents and the given directory will be searched
 		where n is equal to height - 1. (Default: `-1`).
+`g:templates_detect_git`
+		Detects if the directory is in a Git repository and uses `git`
+		to determine the root of the repository. Licensee - if enabled
+		- is given the root directory instead of the one containing
+		the new file, since most Git repositories keep the license in
+		the root. Set to `1` to enable. May add half a second to
+		opening a new file.
 
 
 ===========================================================================
