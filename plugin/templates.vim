@@ -367,7 +367,7 @@ function <SID>TExpandVars()
         let l:projectpath = shellescape(expand("%:p:h"))
         if executable('git') && g:templates_detect_git
             let l:isgitrepo = matchstr(system("git rev-parse --is-inside-work-tree"), "true")
-            if l:isgitrepo == "true"
+            if l:isgitrepo ==# "true"
                 let l:projectpath = system("git rev-parse --show-toplevel")
             endif
         endif
