@@ -15,8 +15,8 @@ Troubleshooting               |template-troubleshooting|
 ===========================================================================
 INTRODUCTION                                       *template-introduction*
 
-This is a simple plug-in for Vim (and NeoVim) allowing to have template
-files per file type, which will be used as starting point when creating
+This is a simple plug-in for Vim (and NeoVim) allowing one to have template
+files per file type, which will be used as a starting point when creating
 new buffers. Template files may contain variables (|template-variables|),
 which are expanded at the time of buffer creation (see |template-usage|).
 The main purpose of the templates is to add boilerplate code to new
@@ -44,7 +44,7 @@ the pattern `*.c`:
 >
 	:Template *.c
 <
-Note that automatic insertion of templates can be disabling by setting
+Note that automatic insertion of templates can be disabled by setting
 the `g:templates_no_autocmd` variable.
 
 
@@ -172,7 +172,7 @@ Searching for templates uses the following logic:
 
 1. If a file named `.vim-template:<pattern>` exists in the current
    directory, it is used. If there are multiple template files that match
-   pattern in the same directory, the one that is most specific is used.
+   the pattern in the same directory, the one that is most specific is used.
    If no suitable template is found, goto step `(2)`.
 
 2. If a parent directory exists, it is set as current directory, and goto
@@ -269,8 +269,8 @@ USER VARIABLES                                  *template-user-variables*
 The `g:templates_user_variables` variable allows to expand user-defined
 variables in templates. It should be set to an array, where each item is
 a two-element array: the first element is the name of the user-defined
-variable, and the second element the name of a function. For example,
-the following can be added to the user |vimrc|:
+variable, and the second element is the name of a function. For example,
+the following can be added to the user's |vimrc|:
 >
 	let g:templates_user_variables = [
 		\   ['FULLPATH', 'GetFullPath'],
@@ -290,7 +290,7 @@ Q: Why are no templates found by the plugin?
 
 A: Make sure you are using a Bourne-compatible shell. Vim will pick by
    default the value of the `$SHELL` environment variable. If you are using
-   a non-Bourn shell (like Fish, for example), you can tell Vim to use a
+   a non-Bourne shell (like Fish, for example), you can tell Vim to use a
    different one by using the 'shell' option. This should not be needed
    in non-Unix systems, so you may want to add the following snippet to
    your `vimrc`:
@@ -313,7 +313,7 @@ A: Please file an issue at https://github.com/aperezdc/vim-template/issues
    We have a `question` category for the issues which you can check to see
    whether others have had the same question before. Eventually, the most
    common questions may end up in the |template-troubleshooting| section of
-   the documentation (this one you are reading).
+   the documentation (the same one you are reading now).
 
 ---
 
