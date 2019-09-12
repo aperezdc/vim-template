@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
@@ -16,8 +16,9 @@ Options:
 """
 from docopt import docopt
 
+
 def main(args):
-    print args
+    print(args)
     %HERE%
 
 if __name__ == '__main__':
