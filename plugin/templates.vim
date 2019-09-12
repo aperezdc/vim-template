@@ -66,6 +66,14 @@ if !exists('g:templates_user_variables')
 	let g:templates_user_variables = []
 endif
 
+if !exists('g:templates_use_licensee')
+	let g:templates_use_licensee = 1
+endif
+
+if !exists('g:templates_detect_git')
+	let g:templates_detect_git = 0
+endif
+
 " Put template system autocommands in their own group. {{{1
 if !exists('g:templates_no_autocmd')
 	let g:templates_no_autocmd = 0
@@ -74,7 +82,7 @@ endif
 if !g:templates_no_autocmd
 	augroup Templating
 		autocmd!
-		autocmd BufNewFile * call <SID>TLoad()
+		autocmd BufNewFile * call <SID>TLoad(2, '')
 	augroup END
 endif
 
@@ -182,7 +190,7 @@ function <SID>TemplateBaseNameTest(template, prefix, filename)
 
 	" For now only use the base of the filename.. this may change later
 	" *Note* we also have to be careful because a:filename may also be the passed
-	" in text from TLoadCmd...
+	" in text from TLoad...
 	let l:filename_chopped = fnamemodify(a:filename,":t")
 
 	" Check for a match
@@ -208,17 +216,23 @@ function <SID>TDirectorySearch(path, template_prefix, file_name)
 	" Use find if possible as it will also get hidden files on nix systems. Use
 	" builtin glob as a fallback
 	if executable("find") && !has("win32") && !has("win64")
-		let l:find_cmd = '`find ''' . a:path . ''' -maxdepth 1 -type f -name ''' . a:template_prefix . '*''`'
+		let l:find_cmd = '`find -L ' . shellescape(a:path) . ' -maxdepth 1 -type f -name ' . shellescape(a:template_prefix . '*' ) . '`'
 		call <SID>Debug("Executing " . l:find_cmd)
 		let l:glob_results = glob(l:find_cmd)
-	else
+		if v:shell_error != 0
+			call <SID>Debug("Could not execute find command")
+			unlet l:glob_results
+		endif
+	endif
+	if !exists("l:glob_results")
+		call <SID>Debug("Using fallback glob")
 		let l:glob_results = glob(a:path . a:template_prefix . "*")
 	endif
 	let l:templates = split(l:glob_results, "\n")
 	for template in l:templates
 		" Make sure the template is readable
 		if filereadable(template)
-			let l:current_score = 
+			let l:current_score =
 						\<SID>TemplateBaseNameTest(template, a:template_prefix, a:file_name)
 			call <SID>Debug("template: " . template . " got scored: " . l:current_score)
 
@@ -329,6 +343,8 @@ function <SID>TExpandVars()
 	let l:day        = strftime("%d")
 	let l:year       = strftime("%Y")
 	let l:month      = strftime("%m")
+	let l:monshort   = strftime("%b")
+	let l:monfull    = strftime("%B")
 	let l:time       = strftime("%H:%M")
 	let l:date       = exists("g:dateformat") ? strftime(g:dateformat) :
 				     \ (l:year . "-" . l:month . "-" . l:day)
@@ -346,6 +362,26 @@ function <SID>TExpandVars()
 	let l:macroclass = toupper(l:class)
 	let l:camelclass = substitute(l:class, "_", "", "g")
 
+	" Define license variable
+	if executable('licensee') && g:templates_use_licensee
+        let l:projectpath = shellescape(expand("%:p:h"))
+        if executable('git') && g:templates_detect_git
+            let l:isgitrepo = matchstr(system("git rev-parse --is-inside-work-tree"), "true")
+            if l:isgitrepo ==# "true"
+                let l:projectpath = system("git rev-parse --show-toplevel")
+            endif
+        endif
+		" Returns 'None' if the project does not have a license.
+		let l:license = matchstr(system("licensee detect " . l:projectpath), '^License:\s*\zs\S\+\ze\%x00')
+	endif
+	if !exists("l:license") || l:license == "None" || l:license == ""
+		if exists("g:license")
+			let l:license = g:license
+		else
+			let l:license = "MIT"
+		endif
+	endif
+
 	" Finally, perform expansions
 	call <SID>TExpand("DAY",   l:day)
 	call <SID>TExpand("YEAR",  l:year)
@@ -354,6 +390,8 @@ function <SID>TExpandVars()
 	call <SID>TExpand("USER",  l:user)
 	call <SID>TExpand("FDATE", l:fdate)
 	call <SID>TExpand("MONTH", l:month)
+	call <SID>TExpand("MONTHSHORT", l:monshort)
+	call <SID>TExpand("MONTHFULL",  l:monfull)
 	call <SID>TExpand("FILE",  l:filen)
 	call <SID>TExpand("FFILE", l:filec)
 	call <SID>TExpand("FDIR",  l:fdir)
@@ -364,7 +402,7 @@ function <SID>TExpandVars()
 	call <SID>TExpand("CLASS", l:class)
 	call <SID>TExpand("MACROCLASS", l:macroclass)
 	call <SID>TExpand("CAMELCLASS", l:camelclass)
-	call <SID>TExpand("LICENSE", exists("g:license") ? g:license : "MIT")
+	call <SID>TExpand("LICENSE", l:license)
 
 	" Perform expansions for user-defined variables
 	for [l:varname, l:funcname] in g:templates_user_variables
@@ -402,43 +440,45 @@ endfunction
 
 " Template application. {{{1
 
-" Loads a template for the current buffer, substitutes variables and puts
-" cursor at %HERE%. Used to implement the BufNewFile autocommand.
+" Expand a template in the current buffer, substituting variables and
+" putting the cursor at %HERE%.
 "
-function <SID>TLoad()
-	if !line2byte( line( '$' ) + 1 ) == -1
-		return
+" The a:position parameter determines the mode of operation:
+"
+"    -1   The template is to be expanded in a new file/buffer.
+"     0   The template is to be expanded at the top of the buffer.
+"     1   The template is to be expanded at the cursor position.
+"
+" An empty a:template will use the file name for the current buffer in
+" order to determine which template to use. A non-empty string can be
+" either be a filename (which gets loaded as a template) or a template
+" suffix (i.e. '.c') which will use the template search algorithm.
+"
+function <SID>TLoad(position, template)
+	" A new file is being created.
+	if a:position == -1
+		if !line2byte(line('$') + 1) == -1
+			return
+		endif
+		let a:position = 0
 	endif
 
-	let l:file_name = expand("%:p")
-	let l:file_dir = <SID>DirName(l:file_name)
-	let l:depth = g:templates_search_height
-	let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:depth)
-	call <SID>TLoadTemplate(l:tFile)
-endfunction
-
-
-" Like the previous one, TLoad(), but intended to be called with an argument
-" that either is a filename (so the file is loaded as a template) or
-" a template suffix (and the template is searched as usual). Of course this
-" makes variable expansion and cursor positioning.
-"
-function <SID>TLoadCmd(template)
-	if filereadable(a:template)
-		let l:tFile = a:template
-	else
-		let l:height = g:templates_search_height
-		let l:tName = g:templates_global_name_prefix . a:template
-		let l:file_name = expand("%:p")
-		let l:file_dir = <SID>DirName(l:file_name)
-
-		let l:tFile = <SID>TFind(l:file_dir, a:template, l:height)
-	endif
-	call <SID>TLoadTemplate(l:tFile)
+	if a:template !=# '' && filereadable(a:template)
+	    let l:tFile = a:template
+    else
+	    let l:height = g:templates_search_height
+		let l:file_name = expand('%:p')
+	    let l:file_dir = <SID>DirName(l:file_name)
+		if a:template !=# ''
+			let l:file_name = a:template
+		endif
+	    let l:tFile = <SID>TFind(l:file_dir, l:file_name, l:height)
+    endif
+    call <SID>TLoadTemplate(l:tFile, a:position)
 endfunction
 
 " Load the given file as a template
-function <SID>TLoadTemplate(template)
+function <SID>TLoadTemplate(template, position)
 	if a:template != ""
 		let l:deleteLastLine = 0
 		if line('$') == 1 && getline(1) == ''
@@ -447,7 +487,11 @@ function <SID>TLoadTemplate(template)
 
 		" Read template file and expand variables in it.
 		let l:safeFileName = <SID>NeuterFileName(a:template)
-		execute "keepalt 0r " . l:safeFileName
+		if a:position == 0 || l:deleteLastLine == 1
+			execute "keepalt 0r " . l:safeFileName
+		else
+			execute "keepalt r " . l:safeFileName
+		endif
 		call <SID>TExpandVars()
 
 		if l:deleteLastLine == 1
@@ -475,7 +519,9 @@ fun ListTemplateSuffixes(A,P,L)
 
   return l:res
 endfun
-command -nargs=1 -complete=customlist,ListTemplateSuffixes Template call <SID>TLoadCmd("<args>")
+
+command -nargs=? -complete=customlist,ListTemplateSuffixes Template call <SID>TLoad(0, "<args>")
+command -nargs=? -complete=customlist,ListTemplateSuffixes TemplateHere call <SID>TLoad(1, "<args>")
 
 " Syntax autocommands {{{1
 "

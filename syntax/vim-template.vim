@@ -1,6 +1,6 @@
 " vim-template syntax file
 " Language:	vim-template
-" Maintainer:	Stephen Chandler Paul <thatslyude@gmail.com>
+" Maintainer:	Lyude Paul <thatslyude@gmail.com>
 " Last Change:	2014 April 21
 
 if exists("b:current_syntax")
@@ -12,7 +12,7 @@ if b:vim_template_subtype != ""
 	unlet b:current_syntax
 endif
 
-syn match vimtemplateVariable "%\%(DAY\|YEAR\|MONTH\|DATE\|TIME\|FILE\|FFILE\|EXT\|MAIL\|USER\|HOST\|GUARD\|CLASS\|MACROCLASS\|CAMELCLASS\|HERE\)%" containedin=ALL
+syn match vimtemplateVariable "%\%(DAY\|YEAR\|MONTH\|MONTHSHORT\|MONTHFULL\|DATE\|TIME\|FILE\|FFILE\|EXT\|MAIL\|USER\|HOST\|GUARD\|CLASS\|MACROCLASS\|CAMELCLASS\|HERE\)%" containedin=ALL
 
 let b:current_syntax = "vim-template"
 

@@ -14,7 +14,7 @@ Installation
 The easiest way to install the plugin is to install it as a bundle.
 For example, using Pathogen__:
 
-1. Get and install `pathogen.vim <_Pathogen>`__. You can skip this step
+1. Get and install `pathogen.vim <https://github.com/tpope/vim-pathogen>`_. You can skip this step
    if you already have it installed.
 
 2. ``cd ~/.vim/bundle``
@@ -27,6 +27,26 @@ Bundle installs are known to work fine also when using Vundle__. Other
 bundle managers are expected to work as well.
 
 __ https://github.com/gmarik/vundle
+
+
+.. important:: If you use Fish__ as your shell, you *will* need to add
+   ``set shell=/bin/sh`` to your ``~/.vimrc`` — the plugin relies on the
+   setting pointing to a Bourne-compatible__ shell.
+
+__ http://fishshell.com/
+__ https://en.wikipedia.org/wiki/Bourne_shell
+
+
+Documentation
+=============
+
+The documentation can be browsed directly in Vim::
+
+    :help template.txt
+
+Alternatively, you can also `read it in your browser`__.
+
+__ https://github.com/aperezdc/vim-template/blob/master/doc/template.txt
 
 
 Updating
