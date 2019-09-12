@@ -22,5 +22,5 @@ def main(args):
     %HERE%
 
 if __name__ == '__main__':
-  main(docopt(__doc__, version='%CAMELCLASS% v1.0'))
+    main(docopt(__doc__, version='%CAMELCLASS% v1.0'))
 
