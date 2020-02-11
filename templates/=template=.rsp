@@ -1,0 +1,96 @@
+//
+// %FFILE%
+// Copyright (C) %YEAR% %USER% <%MAIL%>
+// Distributed under terms of the %LICENSE% license.
+//
+extern crate clap;
+#[macro_use]
+extern crate log;
+extern crate simplelog;
+extern crate threadpool;
+
+use clap::{App, Arg};
+use simplelog::*;
+
+use std::error::Error;
+use std::io::{BufRead, BufReader, Result, Write};
+use std::path::Path;
+use std::process;
+use std::sync::mpsc::channel;
+
+use threadpool::ThreadPool;
+
+fn main() {
+    let matches = App::new("%CAMELCLASS%")
+        .version("0.1.0")
+        .author("%USER%")
+        .about("Some description goes here.")
+        /* Example positional argument.
+        .arg(
+            Arg::with_name("FILE")
+                .help("A file argument.")
+                .required(true)
+                .index(1),
+        )
+        */
+        .arg(
+            Arg::with_name("v")
+                .short("v")
+                .multiple(true)
+                .help("Sets the level of verbosity"),
+        )
+        .arg(
+            Arg::with_name("threads")
+                .short("t")
+                .long("threads")
+                .value_name("THREADS")
+                .help("The number of threads to use when checking the URLs.")
+                .takes_value(true)
+                .default_value("10"),
+        )
+        .get_matches();
+    let verbosity = matches.occurrences_of("v");
+    create_logger(verbosity);
+    let num_workers = clap::value_t!(matches.value_of("threads"), usize).unwrap_or(10);
+
+    let (tx, rx) = channel();
+    let pool = ThreadPool::with_name("%CAMELCLASS% worker".to_owned(), num_workers);
+    %HERE%
+    /* Example usage.
+    for obj in objects {
+        let tx = tx.clone();
+        pool.execute(move || {
+            if check_url(&url, verify_tls).unwrap() {
+                println!("{}", url);
+                if write_file {
+                    tx.send(url)
+                        .expect("channel will be there waiting for the pool.");
+                }
+            } else {
+                trace!("Failed to resolve URL: {}", url);
+            }
+        });
+    }
+    pool.join();
+    drop(tx);
+    */
+}
+
+fn create_logger(level: u64) {
+    let mut log_level = LevelFilter::Info;
+    if level > 2 {
+        // Set logger to trace
+        log_level = LevelFilter::Trace;
+    } else if level > 1 {
+        // Set logger to debug
+        log_level = LevelFilter::Debug;
+    }
+    // Set logger to info by default.
+    CombinedLogger::init(vec![TermLogger::new(
+        log_level,
+        Config::default(),
+        TerminalMode::Mixed,
+    )
+    .unwrap()])
+    .unwrap()
+}
