@@ -31,7 +31,7 @@ endfunction
 function! coc#source#template#complete(opt, cb) abort
 	let l:templates_user_variables = get(g:, 'templates_user_variables', [])
 	for l:item in l:templates_user_variables
-		let l:dict = l:item[1]
+		let s:dict += [l:item[1]]
 	endfor
 	let l:classes = []
 	for l:item in s:dict
