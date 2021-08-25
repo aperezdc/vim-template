@@ -303,7 +303,7 @@ A: Make sure you are using a Bourne-compatible shell. Vim will pick by
 
 Q: How can I debug how the plugin looks up templates?
 
-A: Add `set g:templates_debug = 1` in your `vimrc`.
+A: Add `let g:templates_debug = 1` in your `vimrc`.
 
 ---
 
