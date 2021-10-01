@@ -16,6 +16,7 @@ let s:dict = [
 			\ 'CLASS',
 			\ 'MACROCLASS',
 			\ 'CAMELCLASS',
+			\ 'SPACECLASS',
 			\ 'HERE',
 			\ ]
 
