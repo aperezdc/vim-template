@@ -258,6 +258,11 @@ templates:
 		File name, without extension, with the first character of
 		every work capitalised, and underscores removed.
 
+`%SPACECLASS%`
+		File name, without extension, with the first character of
+		every work capitalised, and underscores and dashed replaced
+		with space.
+
 `%HERE%`
 		Expands to nothing, but ensures that the cursor will be placed in
 		the position where this variable appears after expanding the template.
