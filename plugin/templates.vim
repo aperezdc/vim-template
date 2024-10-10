@@ -535,7 +535,7 @@ execute "au BufNewFile,BufRead " . g:templates_name_prefix . "* "
 
 if !g:templates_no_builtin_templates
 	execute "au BufNewFile,BufRead "
-				\. s:default_template_dir . "/" . g:templates_global_name_prefix . "* "
+				\. s:default_template_dir . (has('win32') ? "\" : "/") . g:templates_global_name_prefix . "* "
 				\. "let b:vim_template_subtype = &filetype | "
 				\. "set ft=vim-template"
 endif
@@ -544,7 +544,7 @@ for s:directory in g:templates_directory
 	let s:directory = <SID>NormalizePath(expand(s:directory) . '/')
 	if isdirectory(s:directory)
 		execute "au BufNewFile,BufRead "
-					\. s:directory . "/" . g:templates_global_name_prefix . "* "
+					\. s:directory . (has('win32') ? "\" : "/") . g:templates_global_name_prefix . "* "
 					\. "let b:vim_template_subtype = &filetype | "
 					\. "set ft=vim-template"
 	endif
