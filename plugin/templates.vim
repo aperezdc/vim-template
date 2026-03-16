@@ -333,7 +333,7 @@ endfunction
 " Makes a single [variable] expansion, using [value] as replacement.
 "
 function <SID>TExpand(variable, value)
-	silent! execute "%s/\\V%" . <SID>EscapeRegex(a:variable) . "%/" .  <SID>EscapeRegex(a:value) . "/g"
+	silent! execute "%s/\\V%" . <SID>EscapeRegex(a:variable) . "%/" .  <SID>EscapeRegex(a:value) . "/ge"
 endfunction
 
 " Performs variable expansion in a template once it was loaded {{{2
@@ -480,25 +480,25 @@ endfunction
 " Load the given file as a template
 function <SID>TLoadTemplate(template, position)
 	if a:template != ""
-		let l:deleteLastLine = 0
-		if line('$') == 1 && getline(1) == ''
-			let l:deleteLastLine = 1
-		endif
+		let l:templateLines = readfile(a:template)
+		let l:emptyBuffer = line('$') == 1 && getline(1) == ''
 
-		" Read template file and expand variables in it.
-		let l:safeFileName = <SID>NeuterFileName(a:template)
-		if a:position == 0 || l:deleteLastLine == 1
-			execute "keepalt 0r " . l:safeFileName
+		if empty(l:templateLines)
+			if l:emptyBuffer
+				call setline(1, '')
+			endif
 		else
-			execute "keepalt r " . l:safeFileName
+			if l:emptyBuffer
+				call append(0, l:templateLines)
+				call deletebufline('', line('$'))
+			elseif a:position == 0
+				call append(0, l:templateLines)
+			else
+				call append(line('.'), l:templateLines)
+			endif
 		endif
+
 		call <SID>TExpandVars()
-
-		if l:deleteLastLine == 1
-			" Loading a template into an empty buffer leaves an extra blank line at the bottom, delete it
-			execute line('$') . "d _"
-		endif
-
 		call <SID>TPutCursor()
 		setlocal nomodified
 	endif
