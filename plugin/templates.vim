@@ -510,13 +510,18 @@ endfunction
 " suffix, as explained before =)
 "
 fun ListTemplateSuffixes(A,P,L)
-  let l:templates = split(globpath(s:default_template_dir, g:templates_global_name_prefix . a:A . "*"), "\n")
   let l:res = []
-  for t in templates
-    let l:suffix = substitute(t, ".*\\.", "", "")
-    call add(l:res, l:suffix)
+  let l:dirs = g:templates_directory
+  if !g:templates_no_builtin_templates
+    call add(l:dirs, s:default_template_dir)
+  endif
+  for l:dir in l:dirs
+    let l:templates = split(globpath(l:dir, g:templates_global_name_prefix . a:A . "*"), "\n")
+    for t in templates
+      let l:suffix = substitute(t, ".*\\.", "", "")
+      call add(l:res, l:suffix)
+    endfor
   endfor
-
   return l:res
 endfun
 
