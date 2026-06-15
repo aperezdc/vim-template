@@ -361,6 +361,7 @@ function <SID>TExpandVars()
 	let l:class      = substitute(l:filen, "\\([a-zA-Z]\\+\\)", "\\u\\1\\e", "g")
 	let l:macroclass = toupper(l:class)
 	let l:camelclass = substitute(l:class, "_", "", "g")
+	let l:spaceclass = substitute(l:class, "[_,-]", " ", "g")
 
 	" Define license variable
 	if executable('licensee') && g:templates_use_licensee
@@ -402,6 +403,7 @@ function <SID>TExpandVars()
 	call <SID>TExpand("CLASS", l:class)
 	call <SID>TExpand("MACROCLASS", l:macroclass)
 	call <SID>TExpand("CAMELCLASS", l:camelclass)
+	call <SID>TExpand("SPACECLASS", l:spaceclass)
 	call <SID>TExpand("LICENSE", l:license)
 
 	" Perform expansions for user-defined variables
