@@ -328,12 +328,17 @@ function <SID>EscapeRegex(raw)
 	return escape(a:raw, '/')
 endfunction
 
+" Escape text for use in the replacement side of :substitute.
+function <SID>EscapeSubstituteReplacement(raw)
+	return escape(a:raw, '\&~/')
+endfunction
+
 " Template variable expansion. {{{1
 
 " Makes a single [variable] expansion, using [value] as replacement.
 "
 function <SID>TExpand(variable, value)
-	silent! execute "%s/\\V%" . <SID>EscapeRegex(a:variable) . "%/" .  <SID>EscapeRegex(a:value) . "/ge"
+	silent! execute "%s/\\V%" . <SID>EscapeRegex(a:variable) . "%/" .  <SID>EscapeSubstituteReplacement(a:value) . "/ge"
 endfunction
 
 " Performs variable expansion in a template once it was loaded {{{2
